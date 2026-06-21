@@ -29,3 +29,4 @@ algoat_add_test(test_heapsort sorting/test_heapsort.cpp)
 # Searching tests
 algoat_add_test(test_linear_search searching/test_linear_search.cpp)
 algoat_add_test(test_binary_search searching/test_binary_search.cpp)
+algoat_add_test(test_interpolation_search searching/test_interpolation_search.cpp)
