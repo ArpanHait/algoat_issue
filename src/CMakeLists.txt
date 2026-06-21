@@ -1,4 +1,4 @@
-add_library(algoat algoat.cpp)
+add_library(algoat algoat.cpp core/traits.cpp)
 
 target_include_directories(algoat
     PUBLIC  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
