@@ -33,3 +33,40 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/algoat
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
 )
+
+install(EXPORT AlgoatTargets
+    FILE AlgoatTargets.cmake
+    NAMESPACE Algoat::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Algoat
+)
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+    "${PROJECT_SOURCE_DIR}/cmake/AlgoatConfig.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/AlgoatConfig.cmake"
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Algoat
+)
+
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/AlgoatConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/AlgoatConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/AlgoatConfigVersion.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/Algoat
+)
+
+configure_file(
+    "${PROJECT_SOURCE_DIR}/cmake/algoat.pc.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/algoat.pc"
+    @ONLY
+)
+
+install(
+    FILES "${CMAKE_CURRENT_BINARY_DIR}/algoat.pc"
+    DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig"
+)
