@@ -17,7 +17,7 @@ if(NOT nlohmann_json_FOUND)
     )
     FetchContent_MakeAvailable(json)
 endif()
-target_link_libraries(algoat PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(algoat PRIVATE $<BUILD_INTERFACE:nlohmann_json::nlohmann_json>)
 
 include(GNUInstallDirs)
 

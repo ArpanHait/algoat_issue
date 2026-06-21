@@ -2,8 +2,7 @@
 
 include(CMakeFindDependencyMacro)
 
-# Algoat depends on nlohmann_json in its public interface
-find_dependency(nlohmann_json)
+# Algoat has no public transitive dependencies
 
 include("${CMAKE_CURRENT_LIST_DIR}/AlgoatTargets.cmake")
 

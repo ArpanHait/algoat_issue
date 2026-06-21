@@ -7,6 +7,5 @@ Name: @PROJECT_NAME@
 Description: A high-performance algorithm library for sorting and searching
 URL: https://github.com/user/algoat
 Version: @PROJECT_VERSION@
-Requires: nlohmann_json
 Cflags: -I${includedir}
 Libs: -L${libdir} -lalgoat
