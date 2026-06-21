@@ -1,0 +1,11 @@
+{
+  "sorting": {
+    "prefer": "quicksort",
+    "fallback": "heapsort",
+    "small_threshold": 32
+  },
+  "searching": {
+    "prefer": "binary_search",
+    "fallback": "linear_search"
+  }
+}
