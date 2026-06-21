@@ -1,6 +1,24 @@
-cmake_minimum_required(VERSION 4.0)
-project(algoat)
+cmake_minimum_required(VERSION 3.21)
+project(algoat VERSION 0.1.0 LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 20)
+# Options
+option(ALGOAT_BUILD_TESTS      "Build unit tests"      ON)
+option(ALGOAT_BUILD_BENCHMARKS "Build benchmarks"      OFF)
+option(ALGOAT_BUILD_EXAMPLES   "Build example programs" ON)
 
-add_library(algoat STATIC library.cpp)
+# Core library
+add_subdirectory(src)
+
+# Optional targets
+if(ALGOAT_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
+if(ALGOAT_BUILD_BENCHMARKS)
+    add_subdirectory(benchmarks)
+endif()
+
+if(ALGOAT_BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
