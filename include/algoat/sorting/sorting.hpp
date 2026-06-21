@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <variant>
 
+#include "algoat/sorting/insertionsort.hpp"
+
 namespace algoat::sorting {
 
 template<typename Algo, typename T>
@@ -15,6 +17,6 @@ concept SortAlgorithm = requires(Algo algo, std::span<T> data) {
     { algo.preferred_min_size() } -> std::convertible_to<std::size_t>;
 };
 
-using SortVariant = std::variant<std::monostate>;
+using SortVariant = std::variant<InsertionSort>;
 
 } // namespace algoat::sorting
