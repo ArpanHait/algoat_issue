@@ -1,0 +1,53 @@
+[build-system]
+requires = ["scikit-build-core>=0.11", "nanobind>=2.0"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "algoat"
+version = "0.1.0"
+description = "A high-performance algorithm library for sorting and searching"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+    { name = "Sambit Chakraborty", email = "sambitckbt45@gmail.com" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[project.urls]
+Homepage = "https://github.com/user/algoat"
+Issues = "https://github.com/user/algoat/issues"
+
+[tool.scikit-build]
+minimum-version = "0.11"
+build-dir = "build/{wheel_tag}"
+cmake.define.ALGOAT_BUILD_PYTHON = "ON"
+cmake.define.ALGOAT_BUILD_TESTS = "OFF"
+cmake.define.ALGOAT_BUILD_BENCHMARKS = "OFF"
+cmake.define.ALGOAT_BUILD_EXAMPLES = "OFF"
+wheel.py-api = "cp312"
+
+[tool.cibuildwheel]
+build = "cp310-* cp311-* cp312-* cp313-* cp314-*"
+skip = "pp* *musllinux*"
+test-requires = "pytest"
+test-command = "pytest {project}/tests/python"
+build-frontend = "build"
