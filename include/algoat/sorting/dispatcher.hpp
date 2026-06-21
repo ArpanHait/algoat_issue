@@ -16,15 +16,15 @@ struct SortingDispatcher {
     static void dispatch(std::span<T> data, 
                          const core::Registry<SortVariant>& registry,
                          const core::DataTraits& traits,
-                         const core::Config& config) {
+                         const core::AlgoConfig& config) {
         
-        std::string algo_name = config.get_sorting_algorithm();
+        std::string algo_name = config.sorting.prefer.value_or("auto");
         
         // 1. Smart Fallbacks / Auto mode
         if (algo_name == "auto" || algo_name.empty()) {
-            if (traits.size < 32) {
+            if (traits.size < config.sorting.small_threshold.value_or(32)) {
                 algo_name = "insertionsort";
-            } else if (traits.is_sorted || traits.is_reverse_sorted) {
+            } else if (traits.sortedness_ratio >= 0.9 || traits.sortedness_ratio <= 0.1) {
                 algo_name = "mergesort"; 
             } else {
                 algo_name = "quicksort";
@@ -33,9 +33,9 @@ struct SortingDispatcher {
 
         // 2. Fallback if requested algo is missing
         if (!registry.has(algo_name)) {
-            algo_name = "heapsort";
+            algo_name = config.sorting.fallback.value_or("heapsort");
             if (!registry.has(algo_name)) {
-                 throw std::runtime_error("Requested sorting algorithm not registered and heapsort fallback missing");
+                 throw std::runtime_error("Requested sorting algorithm not registered and fallback missing");
             }
         }
 
