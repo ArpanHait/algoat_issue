@@ -1,0 +1,4 @@
+{
+        "sorting": {"prefer": "heapsort"},
+        "searching": {"prefer": "linearsearch"}
+    }
