@@ -58,3 +58,36 @@ int main() {
 ## Architecture
 
 Algoat uses a Registry and Dispatcher pattern. Algorithms are registered using a `std::variant` to avoid vtable overhead. The `Dispatcher` dynamically analyzes incoming data using `DataTraits` (size, sortedness ratio) and selects an optimal algorithm if one is not explicitly configured via `AlgoConfig`.
+
+## Python Bindings
+
+Algoat ships with first-class Python bindings via [nanobind](https://github.com/wjakob/nanobind).
+
+### Installation
+
+```bash
+pip install .
+```
+
+### Python Usage Example
+
+```python
+import algoat
+
+# Smart dispatch — automatically picks the best algorithm
+data = [42, 7, 19, 100, 3, 55, 21]
+sorted_data = algoat.sort(data)
+print(sorted_data)  # [3, 7, 19, 21, 42, 55, 100]
+
+# Search in sorted data
+index = algoat.search(sorted_data, 19)
+print(index)  # 2
+
+# Override with a config file
+algoat.load_global_config("config.json")
+```
+
+To run the Python example:
+```bash
+python examples/basic_usage.py
+```
