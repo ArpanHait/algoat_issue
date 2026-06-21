@@ -23,3 +23,4 @@ algoat_add_test(test_registry core/test_registry.cpp)
 # Sorting tests
 algoat_add_test(test_insertionsort sorting/test_insertionsort.cpp)
 algoat_add_test(test_quicksort sorting/test_quicksort.cpp)
+algoat_add_test(test_mergesort sorting/test_mergesort.cpp)
