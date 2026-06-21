@@ -1,0 +1,9 @@
+from typing import List, Optional, TypeVar
+
+T = TypeVar('T', int, float)
+
+def sort(data: List[T]) -> List[T]: ...
+
+def search(data: List[T], target: T) -> Optional[int]: ...
+
+def load_global_config(filepath: str) -> None: ...
