@@ -9,6 +9,7 @@
 #include "algoat/sorting/insertionsort.hpp"
 #include "algoat/sorting/quicksort.hpp"
 #include "algoat/sorting/mergesort.hpp"
+#include "algoat/sorting/heapsort.hpp"
 
 namespace algoat::sorting {
 
@@ -19,6 +20,6 @@ concept SortAlgorithm = requires(Algo algo, std::span<T> data) {
     { algo.preferred_min_size() } -> std::convertible_to<std::size_t>;
 };
 
-using SortVariant = std::variant<InsertionSort, QuickSort, MergeSort>;
+using SortVariant = std::variant<InsertionSort, QuickSort, MergeSort, HeapSort>;
 
 } // namespace algoat::sorting
