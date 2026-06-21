@@ -7,6 +7,7 @@ target_include_directories(algoat
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 target_compile_features(algoat PUBLIC cxx_std_20)
+set_target_properties(algoat PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 find_package(nlohmann_json QUIET)
 if(NOT nlohmann_json_FOUND)
