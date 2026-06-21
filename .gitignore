@@ -2,41 +2,21 @@
 build/
 cmake-build-*/
 out/
+bin/
 
-# CMake generated files
-CMakeCache.txt
-CMakeFiles/
-cmake_install.cmake
-compile_commands.json
-CTestTestfile.cmake
-Testing/
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+*.swp
+*.swo
 
-# Build system files
-Makefile
-build.ninja
-.ninja_deps
-.ninja_log
-
-# Compiled objects and libraries
+# C++ specific
 *.o
 *.obj
 *.a
 *.lib
 *.so
-*.dylib
 *.dll
-*.exe
-
-# IDE and editor files
-.idea/
-.vscode/
-*.swp
-*.swo
-*~
-
-# Logs
-*.log
-
-# OS files
-.DS_Store
-Thumbs.db
+*.dylib
+compile_commands.json
