@@ -8,6 +8,7 @@
 #include <variant>
 
 #include "algoat/searching/linear_search.hpp"
+#include "algoat/searching/binary_search.hpp"
 
 namespace algoat::searching {
 
@@ -18,6 +19,6 @@ concept SearchAlgorithm = requires(Algo algo, std::span<T> data, const T& target
     { algo.requires_sorted() } -> std::same_as<bool>;
 };
 
-using SearchVariant = std::variant<LinearSearch>;
+using SearchVariant = std::variant<LinearSearch, BinarySearch>;
 
 } // namespace algoat::searching
