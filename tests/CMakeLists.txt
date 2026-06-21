@@ -11,8 +11,10 @@ include(GoogleTest)
 function(algoat_add_test TEST_NAME TEST_SOURCE)
     add_executable(${TEST_NAME} ${TEST_SOURCE})
     target_link_libraries(${TEST_NAME} PRIVATE algoat GTest::gtest_main)
+    target_compile_definitions(${TEST_NAME} PRIVATE ALGOAT_TEST_FIXTURES_DIR="${PROJECT_SOURCE_DIR}/tests/core/fixtures")
     gtest_discover_tests(${TEST_NAME})
 endfunction()
 
 # Core tests
 algoat_add_test(test_traits core/test_traits.cpp)
+algoat_add_test(test_config core/test_config.cpp)
