@@ -13,3 +13,6 @@ function(algoat_add_test TEST_NAME TEST_SOURCE)
     target_link_libraries(${TEST_NAME} PRIVATE algoat GTest::gtest_main)
     gtest_discover_tests(${TEST_NAME})
 endfunction()
+
+# Core tests
+algoat_add_test(test_traits core/test_traits.cpp)
