@@ -26,6 +26,7 @@ algoat_add_test(test_insertionsort sorting/test_insertionsort.cpp)
 algoat_add_test(test_quicksort sorting/test_quicksort.cpp)
 algoat_add_test(test_mergesort sorting/test_mergesort.cpp)
 algoat_add_test(test_heapsort sorting/test_heapsort.cpp)
+algoat_add_test(test_sorting_dispatch sorting/test_sorting_dispatch.cpp)
 
 # Searching tests
 algoat_add_test(test_linear_search searching/test_linear_search.cpp)
