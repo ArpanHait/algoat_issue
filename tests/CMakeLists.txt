@@ -19,6 +19,7 @@ endfunction()
 algoat_add_test(test_traits core/test_traits.cpp)
 algoat_add_test(test_config core/test_config.cpp)
 algoat_add_test(test_registry core/test_registry.cpp)
+algoat_add_test(test_dispatcher core/test_dispatcher.cpp)
 
 # Sorting tests
 algoat_add_test(test_insertionsort sorting/test_insertionsort.cpp)
