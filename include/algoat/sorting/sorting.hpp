@@ -17,6 +17,8 @@
 #include "algoat/sorting/gnomesort.hpp"
 #include "algoat/sorting/cyclesort.hpp"
 #include "algoat/sorting/bitonicsort.hpp"
+#include "algoat/sorting/countingsort.hpp"
+#include "algoat/sorting/pigeonholesort.hpp"
 
 namespace algoat::sorting {
 
@@ -27,6 +29,6 @@ concept SortAlgorithm = requires(Algo algo, std::span<T> data) {
     { algo.preferred_min_size() } -> std::convertible_to<std::size_t>;
 };
 
-using SortVariant = std::variant<InsertionSort, QuickSort, MergeSort, HeapSort, SelectionSort, BubbleSort, ShellSort, CombSort, GnomeSort, CycleSort, BitonicSort>;
+using SortVariant = std::variant<InsertionSort, QuickSort, MergeSort, HeapSort, SelectionSort, BubbleSort, ShellSort, CombSort, GnomeSort, CycleSort, BitonicSort, CountingSort, PigeonholeSort>;
 
 } // namespace algoat::sorting
