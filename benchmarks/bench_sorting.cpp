@@ -3,6 +3,14 @@
 #include "algoat/sorting/quicksort.hpp"
 #include "algoat/sorting/mergesort.hpp"
 #include "algoat/sorting/heapsort.hpp"
+#include "algoat/sorting/timsort.hpp"
+#include "algoat/sorting/introsort.hpp"
+#include "algoat/sorting/blocksort.hpp"
+#include "algoat/sorting/radixsort.hpp"
+#include "algoat/sorting/countingsort.hpp"
+#include "algoat/sorting/bucketsort.hpp"
+#include "algoat/sorting/shellsort.hpp"
+#include "algoat/sorting/combsort.hpp"
 #include <vector>
 #include <random>
 #include <algorithm>
@@ -19,54 +27,42 @@ static std::vector<int> generate_random_data(size_t size) {
     return data;
 }
 
-static void BM_InsertionSort(benchmark::State& state) {
+static void BM_StdSort(benchmark::State& state) {
     auto data = generate_random_data(state.range(0));
-    InsertionSort algo;
     for (auto _ : state) {
         state.PauseTiming();
         auto copy = data;
         state.ResumeTiming();
-        algo.sort(std::span{copy});
+        std::sort(copy.begin(), copy.end());
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_InsertionSort)->RangeMultiplier(2)->Range(8, 8<<10)->Complexity();
+BENCHMARK(BM_StdSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
 
-static void BM_QuickSort(benchmark::State& state) {
-    auto data = generate_random_data(state.range(0));
-    QuickSort algo;
-    for (auto _ : state) {
-        state.PauseTiming();
-        auto copy = data;
-        state.ResumeTiming();
-        algo.sort(std::span{copy});
-    }
-    state.SetComplexityN(state.range(0));
-}
-BENCHMARK(BM_QuickSort)->RangeMultiplier(2)->Range(8, 8<<10)->Complexity();
+#define DECLARE_SORT_BENCHMARK(AlgoClass) \
+    static void BM_##AlgoClass(benchmark::State& state) { \
+        auto data = generate_random_data(state.range(0)); \
+        AlgoClass algo; \
+        for (auto _ : state) { \
+            state.PauseTiming(); \
+            auto copy = data; \
+            state.ResumeTiming(); \
+            algo.sort(std::span{copy}); \
+        } \
+        state.SetComplexityN(state.range(0)); \
+    } \
+    BENCHMARK(BM_##AlgoClass)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
 
-static void BM_MergeSort(benchmark::State& state) {
-    auto data = generate_random_data(state.range(0));
-    MergeSort algo;
-    for (auto _ : state) {
-        state.PauseTiming();
-        auto copy = data;
-        state.ResumeTiming();
-        algo.sort(std::span{copy});
-    }
-    state.SetComplexityN(state.range(0));
-}
-BENCHMARK(BM_MergeSort)->RangeMultiplier(2)->Range(8, 8<<10)->Complexity();
-
-static void BM_HeapSort(benchmark::State& state) {
-    auto data = generate_random_data(state.range(0));
-    HeapSort algo;
-    for (auto _ : state) {
-        state.PauseTiming();
-        auto copy = data;
-        state.ResumeTiming();
-        algo.sort(std::span{copy});
-    }
-    state.SetComplexityN(state.range(0));
-}
-BENCHMARK(BM_HeapSort)->RangeMultiplier(2)->Range(8, 8<<10)->Complexity();
+DECLARE_SORT_BENCHMARK(InsertionSort)
+DECLARE_SORT_BENCHMARK(QuickSort)
+DECLARE_SORT_BENCHMARK(MergeSort)
+DECLARE_SORT_BENCHMARK(HeapSort)
+DECLARE_SORT_BENCHMARK(TimSort)
+DECLARE_SORT_BENCHMARK(IntroSort)
+DECLARE_SORT_BENCHMARK(BlockSort)
+DECLARE_SORT_BENCHMARK(RadixSortLSD)
+DECLARE_SORT_BENCHMARK(RadixSortMSD)
+DECLARE_SORT_BENCHMARK(CountingSort)
+DECLARE_SORT_BENCHMARK(BucketSort)
+DECLARE_SORT_BENCHMARK(ShellSort)
+DECLARE_SORT_BENCHMARK(CombSort)
