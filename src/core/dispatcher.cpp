@@ -18,6 +18,9 @@
 #include "algoat/sorting/pigeonholesort.hpp"
 #include "algoat/sorting/radixsort.hpp"
 #include "algoat/sorting/bucketsort.hpp"
+#include "algoat/sorting/introsort.hpp"
+#include "algoat/sorting/timsort.hpp"
+#include "algoat/sorting/blocksort.hpp"
 
 namespace algoat::core {
 
@@ -39,6 +42,9 @@ Dispatcher::Dispatcher(AlgoConfig config) : config_(std::move(config)) {
     sort_registry_.register_algo("radixsortlsd", []() -> sorting::SortVariant { return sorting::RadixSortLSD{}; });
     sort_registry_.register_algo("radixsortmsd", []() -> sorting::SortVariant { return sorting::RadixSortMSD{}; });
     sort_registry_.register_algo("bucketsort", []() -> sorting::SortVariant { return sorting::BucketSort{}; });
+    sort_registry_.register_algo("introsort", []() -> sorting::SortVariant { return sorting::IntroSort{}; });
+    sort_registry_.register_algo("timsort", []() -> sorting::SortVariant { return sorting::TimSort{}; });
+    sort_registry_.register_algo("blocksort", []() -> sorting::SortVariant { return sorting::BlockSort{}; });
 
     // Register searching
     search_registry_.register_algo("linearsearch", []() -> searching::SearchVariant { return searching::LinearSearch{}; });
