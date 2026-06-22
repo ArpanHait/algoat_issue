@@ -31,27 +31,26 @@ def generate_data(n, seed=42):
 
 
 def run_sort_benchmarks(sizes):
-    print("=" * 72)
-    print("SORTING BENCHMARK — algoat.sort() vs sorted() vs list.sort()")
-    print("=" * 72)
-    print(f"{'N':>10} │ {'algoat (µs)':>14} │ {'sorted() (µs)':>14} │ {'list.sort()':>14} │ {'Ratio':>8}")
-    print("─" * 10 + "─┼─" + "─" * 14 + "─┼─" + "─" * 14 + "─┼─" + "─" * 14 + "─┼─" + "─" * 8)
+    print("=" * 86)
+    print("SORTING BENCHMARK — algoat.sort() vs algoat.sort_inplace() vs native")
+    print("=" * 86)
+    print(f"{'N':>10} │ {'algoat (µs)':>14} │ {'inplace (µs)':>14} │ {'sorted()':>12} │ {'list.sort()':>13} │ {'Ratio':>8}")
+    print("─" * 10 + "─┼─" + "─" * 14 + "─┼─" + "─" * 14 + "─┼─" + "─" * 12 + "─┼─" + "─" * 13 + "─┼─" + "─" * 8)
 
     results = []
     for n in sizes:
         data = generate_data(n)
 
         t_algoat = bench(lambda: algoat.sort(data))
+        t_inplace = bench(lambda: (d := data.copy(), algoat.sort_inplace(d)))
         t_sorted = bench(lambda: sorted(data))
-        t_listsort = bench(lambda: data.copy() and list.sort(data.copy()) or None)
-
-        # More accurate list.sort — mutates a copy each time
         t_listsort = bench(lambda: (d := data.copy(), d.sort()))
 
-        ratio = t_algoat / t_sorted if t_sorted > 0 else float('inf')
-        results.append((n, t_algoat, t_sorted, t_listsort, ratio))
+        # Compare inplace to list.sort()
+        ratio = t_inplace / t_listsort if t_listsort > 0 else float('inf')
+        results.append((n, t_algoat, t_inplace, t_sorted, t_listsort, ratio))
 
-        print(f"{n:>10,} │ {t_algoat:>14.2f} │ {t_sorted:>14.2f} │ {t_listsort:>14.2f} │ {ratio:>7.2f}x")
+        print(f"{n:>10,} │ {t_algoat:>14.2f} │ {t_inplace:>14.2f} │ {t_sorted:>12.2f} │ {t_listsort:>13.2f} │ {ratio:>7.2f}x")
 
     return results
 
