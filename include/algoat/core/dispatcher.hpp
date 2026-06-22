@@ -12,10 +12,11 @@
 #include <cstddef>
 #include <utility>
 
+#include <type_traits>
+
 namespace algoat::core {
 
 class Dispatcher {
-private:
     Registry<sorting::SortVariant> sort_registry_;
     Registry<searching::SearchVariant> search_registry_;
     AlgoConfig config_;
@@ -32,9 +33,17 @@ public:
             if (traits.size < config_.sorting.small_threshold.value_or(32)) {
                 algo_name = "insertionsort";
             } else if (traits.sortedness_ratio >= 0.9 || traits.sortedness_ratio <= 0.1) {
-                algo_name = "mergesort"; 
+                algo_name = "timsort"; 
             } else {
-                algo_name = "quicksort";
+                if constexpr (std::is_integral_v<T>) {
+                    if (traits.size > 10000) {
+                        algo_name = "radixsortlsd";
+                    } else {
+                        algo_name = "introsort";
+                    }
+                } else {
+                    algo_name = "introsort";
+                }
             }
         }
 
