@@ -9,6 +9,7 @@
 
 #include "algoat/sorting/selectionsort.hpp"
 #include "algoat/sorting/bubblesort.hpp"
+#include "algoat/sorting/shellsort.hpp"
 
 namespace algoat::core {
 
@@ -20,6 +21,7 @@ Dispatcher::Dispatcher(AlgoConfig config) : config_(std::move(config)) {
     sort_registry_.register_algo("heapsort", []() -> sorting::SortVariant { return sorting::HeapSort{}; });
     sort_registry_.register_algo("selectionsort", []() -> sorting::SortVariant { return sorting::SelectionSort{}; });
     sort_registry_.register_algo("bubblesort", []() -> sorting::SortVariant { return sorting::BubbleSort{}; });
+    sort_registry_.register_algo("shellsort", []() -> sorting::SortVariant { return sorting::ShellSort{}; });
 
     // Register searching
     search_registry_.register_algo("linearsearch", []() -> searching::SearchVariant { return searching::LinearSearch{}; });

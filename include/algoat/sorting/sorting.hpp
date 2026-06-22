@@ -12,6 +12,7 @@
 #include "algoat/sorting/heapsort.hpp"
 #include "algoat/sorting/selectionsort.hpp"
 #include "algoat/sorting/bubblesort.hpp"
+#include "algoat/sorting/shellsort.hpp"
 
 namespace algoat::sorting {
 
@@ -22,6 +23,6 @@ concept SortAlgorithm = requires(Algo algo, std::span<T> data) {
     { algo.preferred_min_size() } -> std::convertible_to<std::size_t>;
 };
 
-using SortVariant = std::variant<InsertionSort, QuickSort, MergeSort, HeapSort, SelectionSort, BubbleSort>;
+using SortVariant = std::variant<InsertionSort, QuickSort, MergeSort, HeapSort, SelectionSort, BubbleSort, ShellSort>;
 
 } // namespace algoat::sorting
