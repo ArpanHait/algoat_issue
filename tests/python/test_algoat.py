@@ -25,3 +25,18 @@ def test_search_not_found():
 def test_empty_list():
     assert algoat.sort([]) == []
     assert algoat.search([], 5) is None
+
+def test_search_large_list():
+    # A large list that would timeout/be very slow if O(N) copy is used
+    n = 100_000
+    data = list(range(n))
+    # Should be instant with zero-copy binary search
+    assert algoat.search(data, 99_999) == 99_999
+    assert algoat.search(data, -1) is None
+    assert algoat.search(data, n) is None
+
+def test_search_duplicates():
+    data = [1, 2, 2, 2, 5]
+    index = algoat.search(data, 2)
+    # Binary search could return any index of the matching element
+    assert index in (1, 2, 3)
