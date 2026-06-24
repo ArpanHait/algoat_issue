@@ -20,11 +20,22 @@ struct IntroSort {
     }
 
     template<std::totally_ordered T>
+    static T min_val(const T& a, const T& b) {
+        return (b < a) ? b : a;
+    }
+
+    template<std::totally_ordered T>
+    static T max_val(const T& a, const T& b) {
+        return (a < b) ? b : a;
+    }
+
+    template<std::totally_ordered T>
     static T get_pivot(const T& a, const T& b, const T& c) {
-        // Branchless median-of-three. 
-        // std::min and std::max typically compile down to CMOV (Conditional Move)
-        // instructions on x86 or CSEL on ARM, entirely avoiding branch misprediction penalties.
-        return std::max(std::min(a, b), std::min(std::max(a, b), c));
+        // We use custom min/max that return by VALUE (T) rather than by REFERENCE (const T&).
+        // Using std::min/std::max creates deeply nested reference chains. On some compilers,
+        // this triggers pointer aliasing fears, causing the optimizer to fall back to memory 
+        // loads or branching instead of generating pure register CMOV assembly.
+        return max_val(min_val(a, b), min_val(max_val(a, b), c));
     }
 
     template<std::totally_ordered T>
