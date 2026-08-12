@@ -20,3 +20,17 @@ bin/
 *.dll
 *.dylib
 compile_commands.json
+
+# Python specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.venv/
+venv/
+env/
+ENV/
+*.egg-info/
+dist/
+.eggs/
