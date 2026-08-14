@@ -29,12 +29,6 @@ jobs:
 
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.17.0
-        env:
-          CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
-          CIBW_SKIP: "pp* *musllinux*"
-          CIBW_TEST_REQUIRES: pytest
-          CIBW_TEST_COMMAND: "pytest {project}/tests/python"
-          CIBW_BUILD_FRONTEND: "build"
 
       - uses: actions/upload-artifact@v4
         with:
