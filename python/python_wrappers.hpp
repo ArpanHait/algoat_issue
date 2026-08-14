@@ -72,45 +72,36 @@ struct PyBigIntWrapper {
         }
     }
 
-    bool operator<(const PyBigIntWrapper& other) const {
-        if (is_small && other.is_small) return small_val < other.small_val;
+    static bool rich_compare(PyObject* lhs, PyObject* rhs, int op) {
         PyGILState_STATE gstate = PyGILState_Ensure();
-        int res = PyObject_RichCompareBool(obj, other.obj, Py_LT);
-        if (res == -1) { PyErr_Clear(); res = 0; }
+        int res = PyObject_RichCompareBool(lhs, rhs, op);
+        if (res == -1) {
+            PyErr_Clear();
+            res = 0;
+        }
         PyGILState_Release(gstate);
         return res == 1;
+    }
+
+    bool operator<(const PyBigIntWrapper& other) const {
+        if (is_small && other.is_small) return small_val < other.small_val;
+        return rich_compare(obj, other.obj, Py_LT);
     }
     bool operator<=(const PyBigIntWrapper& other) const {
         if (is_small && other.is_small) return small_val <= other.small_val;
-        PyGILState_STATE gstate = PyGILState_Ensure();
-        int res = PyObject_RichCompareBool(obj, other.obj, Py_LE);
-        if (res == -1) { PyErr_Clear(); res = 0; }
-        PyGILState_Release(gstate);
-        return res == 1;
+        return rich_compare(obj, other.obj, Py_LE);
     }
     bool operator>(const PyBigIntWrapper& other) const {
         if (is_small && other.is_small) return small_val > other.small_val;
-        PyGILState_STATE gstate = PyGILState_Ensure();
-        int res = PyObject_RichCompareBool(obj, other.obj, Py_GT);
-        if (res == -1) { PyErr_Clear(); res = 0; }
-        PyGILState_Release(gstate);
-        return res == 1;
+        return rich_compare(obj, other.obj, Py_GT);
     }
     bool operator>=(const PyBigIntWrapper& other) const {
         if (is_small && other.is_small) return small_val >= other.small_val;
-        PyGILState_STATE gstate = PyGILState_Ensure();
-        int res = PyObject_RichCompareBool(obj, other.obj, Py_GE);
-        if (res == -1) { PyErr_Clear(); res = 0; }
-        PyGILState_Release(gstate);
-        return res == 1;
+        return rich_compare(obj, other.obj, Py_GE);
     }
     bool operator==(const PyBigIntWrapper& other) const {
         if (is_small && other.is_small) return small_val == other.small_val;
-        PyGILState_STATE gstate = PyGILState_Ensure();
-        int res = PyObject_RichCompareBool(obj, other.obj, Py_EQ);
-        if (res == -1) { PyErr_Clear(); res = 0; }
-        PyGILState_Release(gstate);
-        return res == 1;
+        return rich_compare(obj, other.obj, Py_EQ);
     }
 };
 
