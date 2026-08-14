@@ -1,5 +1,5 @@
 add_executable(basic_usage basic_usage.cpp)
-target_link_libraries(basic_usage PRIVATE algoat::algoat)
+target_link_libraries(basic_usage PRIVATE algoat)
 
 add_executable(physics_simulation_2d physics_simulation_2d.cpp)
-target_link_libraries(physics_simulation_2d PRIVATE algoat::algoat)
+target_link_libraries(physics_simulation_2d PRIVATE algoat)
