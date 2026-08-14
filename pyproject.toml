@@ -10,7 +10,7 @@ readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
 authors = [
-    { name = "Sambit Chakraborty", email = "sambitckbt45@gmail.com" }
+    { name = "Sambit Chakraborty", email = "smbtchakraborty@gmail.com" }
 ]
 classifiers = [
     "Development Status :: 4 - Beta",

@@ -1,0 +1,10 @@
+{
+  "name": "algoat",
+  "version": "0.1.0",
+  "description": "A high-performance algorithmic dispatch library for sorting and searching",
+  "homepage": "https://github.com/user/algoat",
+  "license": "MIT",
+  "dependencies": [
+    "nlohmann-json"
+  ]
+}
