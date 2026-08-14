@@ -1,45 +1,14 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/optional.h>
+#include <nanobind/ndarray.h>
 #include <algoat/algoat.hpp>
+#include "python_wrappers.hpp"
+#include "python_types.hpp"
 #include <vector>
 #include <span>
 
 namespace nb = nanobind;
-
-struct PyIntWrapper {
-    PyObject* obj;
-    long long val;
-
-    PyIntWrapper() : obj(nullptr), val(0) {}
-    PyIntWrapper(PyObject* o) : obj(o) {
-        if (PyLong_Check(o)) val = PyLong_AsLongLong(o);
-        else val = (long long)PyFloat_AsDouble(o);
-    }
-
-    bool operator<(const PyIntWrapper& other) const { return val < other.val; }
-    bool operator<=(const PyIntWrapper& other) const { return val <= other.val; }
-    bool operator>(const PyIntWrapper& other) const { return val > other.val; }
-    bool operator>=(const PyIntWrapper& other) const { return val >= other.val; }
-    bool operator==(const PyIntWrapper& other) const { return val == other.val; }
-};
-
-struct PyFloatWrapper {
-    PyObject* obj;
-    double val;
-
-    PyFloatWrapper() : obj(nullptr), val(0.0) {}
-    PyFloatWrapper(PyObject* o) : obj(o) {
-        if (PyFloat_Check(o)) val = PyFloat_AsDouble(o);
-        else val = (double)PyLong_AsLongLong(o);
-    }
-
-    bool operator<(const PyFloatWrapper& other) const { return val < other.val; }
-    bool operator<=(const PyFloatWrapper& other) const { return val <= other.val; }
-    bool operator>(const PyFloatWrapper& other) const { return val > other.val; }
-    bool operator>=(const PyFloatWrapper& other) const { return val >= other.val; }
-    bool operator==(const PyFloatWrapper& other) const { return val == other.val; }
-};
 
 template<typename Wrapper>
 nb::list sort_list_direct(nb::list data) {
@@ -49,7 +18,10 @@ nb::list sort_list_direct(nb::list data) {
         buf[i] = Wrapper(data[i].ptr());
     }
     
-    algoat::sort<Wrapper>(std::span<Wrapper>{buf});
+    {
+        nb::gil_scoped_release release;
+        algoat::sort<Wrapper>(std::span<Wrapper>{buf});
+    }
     
     nb::list result = nb::steal<nb::list>(PyList_New(n));
     for (size_t i = 0; i < n; ++i) {
@@ -70,28 +42,113 @@ void sort_list_inplace_impl(nb::list data) {
         buf[i] = Wrapper(data[i].ptr());
     }
     
-    algoat::sort<Wrapper>(std::span<Wrapper>{buf});
+    {
+        nb::gil_scoped_release release;
+        algoat::sort<Wrapper>(std::span<Wrapper>{buf});
+    }
     
     for (size_t i = 0; i < n; ++i) {
         PyList_SET_ITEM(data.ptr(), i, buf[i].obj);
     }
 }
 
-void sort_inplace_dispatch(nb::list data) {
-    if (nb::len(data) == 0) return;
-    if (PyFloat_Check(data[0].ptr())) {
-        sort_list_inplace_impl<PyFloatWrapper>(data);
-    } else {
-        sort_list_inplace_impl<PyIntWrapper>(data);
+bool try_sort_bool_list(nb::list data, nb::list& out_result) {
+    size_t n = nb::len(data);
+    if (n == 0) {
+        out_result = nb::list();
+        return true;
     }
+    if (!PyBool_Check(data[0].ptr())) {
+        return false;
+    }
+
+    size_t count_false = 0;
+    for (size_t i = 0; i < n; ++i) {
+        PyObject* ptr = data[i].ptr();
+        if (!PyBool_Check(ptr)) {
+            return false;
+        }
+        if (ptr == Py_False) {
+            count_false++;
+        }
+    }
+
+    nb::list result = nb::steal<nb::list>(PyList_New(n));
+    for (size_t i = 0; i < count_false; ++i) {
+        Py_INCREF(Py_False);
+        PyList_SET_ITEM(result.ptr(), i, Py_False);
+    }
+    for (size_t i = count_false; i < n; ++i) {
+        Py_INCREF(Py_True);
+        PyList_SET_ITEM(result.ptr(), i, Py_True);
+    }
+
+    out_result = result;
+    return true;
 }
 
 nb::list sort_dispatch(nb::list data) {
     if (nb::len(data) == 0) return nb::list();
-    if (PyFloat_Check(data[0].ptr())) {
-        return sort_list_direct<PyFloatWrapper>(data);
+    
+    nb::list bool_res;
+    if (try_sort_bool_list(data, bool_res)) {
+        return bool_res;
+    }
+
+    PyObject* first = data[0].ptr();
+    if (PyFloat_Check(first)) {
+        return sort_list_direct<algoat::pybind::PyFloatWrapper>(data);
+    } else if (PyUnicode_Check(first)) {
+        return sort_list_direct<algoat::pybind::PyStringWrapper>(data);
+    } else if (PyComplex_Check(first)) {
+        return sort_list_direct<algoat::pybind::PyComplexWrapper>(data);
+    } else if (PyLong_Check(first)) {
+        return sort_list_direct<algoat::pybind::PyBigIntWrapper>(data);
     } else {
-        return sort_list_direct<PyIntWrapper>(data);
+        return sort_list_direct<algoat::pybind::PyGenericWrapper>(data);
+    }
+}
+
+void sort_inplace_dispatch(nb::list data) {
+    if (nb::len(data) == 0) return;
+    
+    if (PyBool_Check(data[0].ptr())) {
+        size_t n = nb::len(data);
+        size_t count_false = 0;
+        bool all_bool = true;
+        for (size_t i = 0; i < n; ++i) {
+            PyObject* ptr = data[i].ptr();
+            if (!PyBool_Check(ptr)) { all_bool = false; break; }
+            if (ptr == Py_False) count_false++;
+        }
+        if (all_bool) {
+            for (size_t i = 0; i < count_false; ++i) {
+                Py_INCREF(Py_False);
+                PyObject* old = PyList_GET_ITEM(data.ptr(), i);
+                PyList_SET_ITEM(data.ptr(), i, Py_False);
+                Py_DECREF(old);
+            }
+            for (size_t i = count_false; i < n; ++i) {
+                Py_INCREF(Py_True);
+                PyObject* old = PyList_GET_ITEM(data.ptr(), i);
+                PyList_SET_ITEM(data.ptr(), i, Py_True);
+                Py_DECREF(old);
+            }
+            return;
+        }
+    }
+    
+    PyObject* first = data[0].ptr();
+    if (PyFloat_Check(first)) {
+        sort_list_inplace_impl<algoat::pybind::PyFloatWrapper>(data);
+    } else if (PyUnicode_Check(first)) {
+        sort_list_inplace_impl<algoat::pybind::PyStringWrapper>(data);
+    } else if (PyComplex_Check(first)) {
+        sort_list_inplace_impl<algoat::pybind::PyComplexWrapper>(data);
+    } else if (PyLong_Check(first)) {
+        sort_list_inplace_impl<algoat::pybind::PyBigIntWrapper>(data);
+    } else {
+        sort_list_inplace_impl<algoat::pybind::PyGenericWrapper>(data);
     }
 }
 
@@ -129,9 +186,45 @@ std::optional<std::size_t> search_dispatch(nb::list data, nb::object target) {
     
     if (PyFloat_Check(data[0].ptr()) || PyFloat_Check(target.ptr())) {
         return search_list_direct<double>(data, nb::cast<double>(target));
+    } else if (PyUnicode_Check(data[0].ptr()) || PyUnicode_Check(target.ptr())) {
+        return search_list_direct<std::string>(data, nb::cast<std::string>(target));
     } else {
-        return search_list_direct<int>(data, nb::cast<int>(target));
+        return search_list_direct<int64_t>(data, nb::cast<int64_t>(target));
     }
+}
+
+#include <algoat/numerics/float16_sort.hpp>
+#include <algoat/sorting/boolean_sort.hpp>
+#include <stdexcept>
+
+void sort_ndarray_float16_buffer(nb::ndarray<uint16_t, nb::ndim<1>, nb::c_contig> array) {
+    if (reinterpret_cast<std::uintptr_t>(array.data()) % alignof(uint16_t) != 0) {
+        throw std::invalid_argument("Input array memory buffer is not aligned to alignof(uint16_t). Use np.require(arr, requirements=['A']) in Python.");
+    }
+    algoat::numerics::sort_float16(std::span<uint16_t>(array.data(), array.size()));
+}
+
+void sort_ndarray_bool_buffer(nb::ndarray<uint8_t, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sorting::sort_boolean(std::span<uint8_t>(array.data(), array.size()));
+}
+
+void sort_ndarray_float32(nb::ndarray<float, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<float>(array.data(), array.size()));
+}
+void sort_ndarray_float64(nb::ndarray<double, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<double>(array.data(), array.size()));
+}
+void sort_ndarray_int32(nb::ndarray<int32_t, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<int32_t>(array.data(), array.size()));
+}
+void sort_ndarray_int64(nb::ndarray<int64_t, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<int64_t>(array.data(), array.size()));
+}
+void sort_ndarray_uint32(nb::ndarray<uint32_t, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<uint32_t>(array.data(), array.size()));
+}
+void sort_ndarray_uint64(nb::ndarray<uint64_t, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<uint64_t>(array.data(), array.size()));
 }
 
 NB_MODULE(_algoat_impl, m) {
@@ -139,7 +232,30 @@ NB_MODULE(_algoat_impl, m) {
 
     m.def("load_global_config", &algoat::load_global_config, nb::arg("filepath"), "Load algorithm configuration from a JSON file");
 
-    m.def("sort", &sort_dispatch, nb::arg("data"), "Sort a list of ints or floats");
-    m.def("sort_inplace", &sort_inplace_dispatch, nb::arg("data"), "Sort a list of ints or floats in-place");
+    m.def("sort", &sort_dispatch, nb::arg("data"), "Sort a list of mixed types");
+    m.def("sort_inplace", &sort_inplace_dispatch, nb::arg("data"), "Sort a list in-place");
     m.def("search", &search_dispatch, nb::arg("data"), nb::arg("target"), "Search for a target in a list");
+
+    m.def("sort_numpy_f16", &sort_ndarray_float16_buffer, nb::arg("array").noconvert());
+    m.def("sort_numpy_bool", &sort_ndarray_bool_buffer, nb::arg("array").noconvert());
+    m.def("sort_numpy", &sort_ndarray_float32, nb::arg("array").noconvert());
+    m.def("sort_numpy", &sort_ndarray_float64, nb::arg("array").noconvert());
+    m.def("sort_numpy", &sort_ndarray_int32, nb::arg("array").noconvert());
+    m.def("sort_numpy", &sort_ndarray_int64, nb::arg("array").noconvert());
+    m.def("sort_numpy", &sort_ndarray_uint32, nb::arg("array").noconvert());
+    m.def("sort_numpy", &sort_ndarray_uint64, nb::arg("array").noconvert());
+
+    m.def("sort_numpy_c64", [](nb::ndarray<std::complex<float>, nb::ndim<1>, nb::c_contig> array) {
+        algoat::numerics::sort_complex_morton(std::span<std::complex<float>>(array.data(), array.size()));
+    });
+    m.def("sort_numpy_c128", [](nb::ndarray<std::complex<double>, nb::ndim<1>, nb::c_contig> array) {
+        algoat::numerics::sort_complex_morton(std::span<std::complex<double>>(array.data(), array.size()));
+    });
+
+    nb::class_<algoat::Rational>(m, "Rational")
+        .def(nb::init<int64_t, int64_t>())
+        .def_rw("num", &algoat::Rational::num)
+        .def_rw("den", &algoat::Rational::den)
+        .def("__lt__", [](const algoat::Rational &a, const algoat::Rational &b) { return a < b; })
+        .def("__eq__", [](const algoat::Rational &a, const algoat::Rational &b) { return a == b; });
 }

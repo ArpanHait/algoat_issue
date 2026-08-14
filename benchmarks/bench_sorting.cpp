@@ -66,3 +66,112 @@ DECLARE_SORT_BENCHMARK(CountingSort)
 DECLARE_SORT_BENCHMARK(BucketSort)
 DECLARE_SORT_BENCHMARK(ShellSort)
 DECLARE_SORT_BENCHMARK(CombSort)
+
+#include <algoat/sorting/boolean_sort.hpp>
+#include <algoat/numerics/float16_sort.hpp>
+#include <algoat/numerics/morton.hpp>
+
+static void BM_Bool_StdSort(benchmark::State& state) {
+    std::vector<uint8_t> data(state.range(0));
+    std::mt19937 gen(42);
+    std::uniform_int_distribution<int> dist(0, 1);
+    for (size_t i = 0; i < data.size(); ++i) {
+        data[i] = dist(gen);
+    }
+    for (auto _ : state) {
+        state.PauseTiming();
+        auto copy = data;
+        state.ResumeTiming();
+        std::sort(copy.begin(), copy.end());
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BM_Bool_StdSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+
+static void BM_Bool_AlgoatSort(benchmark::State& state) {
+    std::vector<uint8_t> data(state.range(0));
+    std::mt19937 gen(42);
+    std::uniform_int_distribution<int> dist(0, 1);
+    for (size_t i = 0; i < data.size(); ++i) {
+        data[i] = dist(gen);
+    }
+    for (auto _ : state) {
+        state.PauseTiming();
+        auto copy = data;
+        state.ResumeTiming();
+        algoat::sorting::sort_boolean(std::span<uint8_t>{copy});
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BM_Bool_AlgoatSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+
+// Semantic alias for 16-bit float layout
+using Float16 = uint16_t;
+
+static void BM_Float16_StdSort(benchmark::State& state) {
+    std::vector<Float16> data(state.range(0));
+    std::mt19937 gen(42);
+    std::uniform_int_distribution<uint16_t> dist(0, 65535);
+    for (size_t i = 0; i < data.size(); ++i) {
+        data[i] = dist(gen);
+    }
+    for (auto _ : state) {
+        state.PauseTiming();
+        auto copy = data;
+        state.ResumeTiming();
+        std::sort(copy.begin(), copy.end(), algoat::numerics::Float16Compare{});
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BM_Float16_StdSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+
+static void BM_Float16_AlgoatSort(benchmark::State& state) {
+    std::vector<Float16> data(state.range(0));
+    std::mt19937 gen(42);
+    std::uniform_int_distribution<uint16_t> dist(0, 65535);
+    for (size_t i = 0; i < data.size(); ++i) {
+        data[i] = dist(gen);
+    }
+    for (auto _ : state) {
+        state.PauseTiming();
+        auto copy = data;
+        state.ResumeTiming();
+        algoat::numerics::sort_float16(std::span<Float16>{copy});
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BM_Float16_AlgoatSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+
+static void BM_Complex_StdSort(benchmark::State& state) {
+    std::vector<std::complex<float>> data(state.range(0));
+    std::mt19937 gen(42);
+    std::uniform_real_distribution<float> dist(-1000.0f, 1000.0f);
+    for (size_t i = 0; i < data.size(); ++i) {
+        data[i] = {dist(gen), dist(gen)};
+    }
+    for (auto _ : state) {
+        state.PauseTiming();
+        auto copy = data;
+        state.ResumeTiming();
+        std::sort(copy.begin(), copy.end(), algoat::numerics::MortonCompare{});
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BM_Complex_StdSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+
+static void BM_Complex_AlgoatSort(benchmark::State& state) {
+    std::vector<std::complex<float>> data(state.range(0));
+    std::mt19937 gen(42);
+    std::uniform_real_distribution<float> dist(-1000.0f, 1000.0f);
+    for (size_t i = 0; i < data.size(); ++i) {
+        data[i] = {dist(gen), dist(gen)};
+    }
+    for (auto _ : state) {
+        state.PauseTiming();
+        auto copy = data;
+        state.ResumeTiming();
+        algoat::numerics::sort_complex_morton(std::span<std::complex<float>>{copy});
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BM_Complex_AlgoatSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
