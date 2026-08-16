@@ -6,7 +6,7 @@ import os
 class AlgoatConan(ConanFile):
     name = "algoat"
     version = "0.1.0"
-    license = "MIT"
+    license = "LGPL-3.0-only"
     author = "Sambit Chakraborty <smbtchakraborty@gmail.com>"
     url = "https://github.com/user/algoat"
     description = "A high-performance algorithmic dispatch library for sorting and searching"

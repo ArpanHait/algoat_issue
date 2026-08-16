@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "A high-performance algorithmic dispatch library for sorting and searching",
   "homepage": "https://github.com/user/algoat",
-  "license": "MIT",
+  "license": "LGPL-3.0-only",
   "dependencies": [
     "nlohmann-json"
   ]
