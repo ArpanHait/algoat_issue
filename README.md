@@ -97,6 +97,7 @@ print(index)  # 2
 For complete, runnable standalone examples of these APIs (including the NumPy benchmarking scripts), please see the dedicated example directories:
 - **[C++ Examples](examples/cpp/README.md)**: Contains `basic_usage.cpp`.
 - **[Python Examples](examples/python/README.md)**: Contains `basic_usage.py` and the `benchmark.py` NumPy speedup suite.
+```
 
 ## Architecture
 
