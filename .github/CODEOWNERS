@@ -1,0 +1,38 @@
+# Global fallback owner
+* @Sambit003
+
+# CI/CD, Workflows & GitHub Governance
+/.github/ @Sambit003
+
+# Core Library Architecture & C++ Headers
+/include/algoat/ @Sambit003
+/include/algoat/core/ @Sambit003
+/include/algoat/sorting/ @Sambit003
+/include/algoat/searching/ @Sambit003
+/include/algoat/numerics/ @Sambit003
+
+# C++ Implementation
+/src/ @Sambit003
+
+# Python Bindings & nanobind Integration
+/python/ @Sambit003
+/pyproject.toml @Sambit003
+
+# Build Systems & Packaging (CMake, Conan, vcpkg)
+/CMakeLists.txt @Sambit003
+/CMakePresets.json @Sambit003
+/cmake/ @Sambit003
+/conanfile.py @Sambit003
+/vcpkg.json @Sambit003
+
+# Tests & Benchmarks
+/tests/ @Sambit003
+/benchmarks/ @Sambit003
+/examples/ @Sambit003
+
+# Documentation & Specifications
+/docs/ @Sambit003
+/README.md @Sambit003
+/ARCHITECTURE.md @Sambit003
+/CONTRIBUTING.md @Sambit003
+/AGENTS.md @Sambit003
