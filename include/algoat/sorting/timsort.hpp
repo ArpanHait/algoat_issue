@@ -5,18 +5,19 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
-#include <concepts>
-#include <algorithm>
 #include "algoat/sorting/insertionsort.hpp"
+
+#include <algorithm>
+#include <concepts>
+#include <span>
+#include <string_view>
 
 namespace algoat::sorting {
 
 /**
  * @struct TimSort
  * @brief Adaptive stable hybrid sorting algorithm derived from Merge Sort and Insertion Sort.
- * 
+ *
  * Divides data into 32-element runs, sorts each run using @c InsertionSort, and then
  * iteratively merges runs using @c std::inplace_merge. Highly efficient for nearly sorted
  * data where run sortedness can be exploited.
@@ -56,13 +57,13 @@ struct TimSort {
     /**
      * @brief Sorts the span in-place using TimSort.
      * @tparam T Type satisfying @c std::totally_ordered.
- *
- * @param data Contiguous span of elements to sort.
+     *
+     * @param data Contiguous span of elements to sort.
      */
-    template<std::totally_ordered T>
-    void sort(std::span<T> data) const {
-        if (data.empty()) return;
-        
+    template <std::totally_ordered T> void sort(std::span<T> data) const {
+        if (data.empty())
+            return;
+
         std::size_t n = data.size();
 
         // 1. Sort individual runs of size RUN_SIZE with InsertionSort
@@ -78,11 +79,8 @@ struct TimSort {
                 std::size_t right = std::min(left + 2 * size, n);
 
                 if (mid < right) {
-                    std::inplace_merge(
-                        data.begin() + left,
-                        data.begin() + mid,
-                        data.begin() + right
-                    );
+                    std::inplace_merge(data.begin() + left, data.begin() + mid,
+                                       data.begin() + right);
                 }
             }
         }

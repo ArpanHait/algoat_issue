@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "algoat/core/traits.hpp"
+
+#include <gtest/gtest.h>
 #include <vector>
 
 using namespace algoat::core;

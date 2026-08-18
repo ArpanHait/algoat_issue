@@ -1,19 +1,20 @@
-#include <benchmark/benchmark.h>
-#include "algoat/sorting/insertionsort.hpp"
-#include "algoat/sorting/quicksort.hpp"
-#include "algoat/sorting/mergesort.hpp"
-#include "algoat/sorting/heapsort.hpp"
-#include "algoat/sorting/timsort.hpp"
-#include "algoat/sorting/introsort.hpp"
 #include "algoat/sorting/blocksort.hpp"
-#include "algoat/sorting/radixsort.hpp"
-#include "algoat/sorting/countingsort.hpp"
 #include "algoat/sorting/bucketsort.hpp"
-#include "algoat/sorting/shellsort.hpp"
 #include "algoat/sorting/combsort.hpp"
-#include <vector>
-#include <random>
+#include "algoat/sorting/countingsort.hpp"
+#include "algoat/sorting/heapsort.hpp"
+#include "algoat/sorting/insertionsort.hpp"
+#include "algoat/sorting/introsort.hpp"
+#include "algoat/sorting/mergesort.hpp"
+#include "algoat/sorting/quicksort.hpp"
+#include "algoat/sorting/radixsort.hpp"
+#include "algoat/sorting/shellsort.hpp"
+#include "algoat/sorting/timsort.hpp"
+
 #include <algorithm>
+#include <benchmark/benchmark.h>
+#include <random>
+#include <vector>
 
 using namespace algoat::sorting;
 
@@ -37,21 +38,21 @@ static void BM_StdSort(benchmark::State& state) {
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_StdSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+BENCHMARK(BM_StdSort)->RangeMultiplier(2)->Range(8, 8 << 12)->Complexity();
 
-#define DECLARE_SORT_BENCHMARK(AlgoClass) \
-    static void BM_##AlgoClass(benchmark::State& state) { \
-        auto data = generate_random_data(state.range(0)); \
-        AlgoClass algo; \
-        for (auto _ : state) { \
-            state.PauseTiming(); \
-            auto copy = data; \
-            state.ResumeTiming(); \
-            algo.sort(std::span{copy}); \
-        } \
-        state.SetComplexityN(state.range(0)); \
-    } \
-    BENCHMARK(BM_##AlgoClass)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+#define DECLARE_SORT_BENCHMARK(AlgoClass)                                                          \
+    static void BM_##AlgoClass(benchmark::State& state) {                                          \
+        auto data = generate_random_data(state.range(0));                                          \
+        AlgoClass algo;                                                                            \
+        for (auto _ : state) {                                                                     \
+            state.PauseTiming();                                                                   \
+            auto copy = data;                                                                      \
+            state.ResumeTiming();                                                                  \
+            algo.sort(std::span{copy});                                                            \
+        }                                                                                          \
+        state.SetComplexityN(state.range(0));                                                      \
+    }                                                                                              \
+    BENCHMARK(BM_##AlgoClass)->RangeMultiplier(2)->Range(8, 8 << 12)->Complexity();
 
 DECLARE_SORT_BENCHMARK(InsertionSort)
 DECLARE_SORT_BENCHMARK(QuickSort)
@@ -67,9 +68,9 @@ DECLARE_SORT_BENCHMARK(BucketSort)
 DECLARE_SORT_BENCHMARK(ShellSort)
 DECLARE_SORT_BENCHMARK(CombSort)
 
-#include <algoat/sorting/boolean_sort.hpp>
 #include <algoat/numerics/float16_sort.hpp>
 #include <algoat/numerics/morton.hpp>
+#include <algoat/sorting/boolean_sort.hpp>
 
 static void BM_Bool_StdSort(benchmark::State& state) {
     std::vector<uint8_t> data(state.range(0));
@@ -86,7 +87,7 @@ static void BM_Bool_StdSort(benchmark::State& state) {
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_Bool_StdSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+BENCHMARK(BM_Bool_StdSort)->RangeMultiplier(2)->Range(8, 8 << 12)->Complexity();
 
 static void BM_Bool_AlgoatSort(benchmark::State& state) {
     std::vector<uint8_t> data(state.range(0));
@@ -103,7 +104,7 @@ static void BM_Bool_AlgoatSort(benchmark::State& state) {
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_Bool_AlgoatSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+BENCHMARK(BM_Bool_AlgoatSort)->RangeMultiplier(2)->Range(8, 8 << 12)->Complexity();
 
 // Semantic alias for 16-bit float layout
 using Float16 = uint16_t;
@@ -123,7 +124,7 @@ static void BM_Float16_StdSort(benchmark::State& state) {
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_Float16_StdSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+BENCHMARK(BM_Float16_StdSort)->RangeMultiplier(2)->Range(8, 8 << 12)->Complexity();
 
 static void BM_Float16_AlgoatSort(benchmark::State& state) {
     std::vector<Float16> data(state.range(0));
@@ -140,7 +141,7 @@ static void BM_Float16_AlgoatSort(benchmark::State& state) {
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_Float16_AlgoatSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+BENCHMARK(BM_Float16_AlgoatSort)->RangeMultiplier(2)->Range(8, 8 << 12)->Complexity();
 
 static void BM_Complex_StdSort(benchmark::State& state) {
     std::vector<std::complex<float>> data(state.range(0));
@@ -157,7 +158,7 @@ static void BM_Complex_StdSort(benchmark::State& state) {
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_Complex_StdSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+BENCHMARK(BM_Complex_StdSort)->RangeMultiplier(2)->Range(8, 8 << 12)->Complexity();
 
 static void BM_Complex_AlgoatSort(benchmark::State& state) {
     std::vector<std::complex<float>> data(state.range(0));
@@ -174,4 +175,4 @@ static void BM_Complex_AlgoatSort(benchmark::State& state) {
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_Complex_AlgoatSort)->RangeMultiplier(2)->Range(8, 8<<12)->Complexity();
+BENCHMARK(BM_Complex_AlgoatSort)->RangeMultiplier(2)->Range(8, 8 << 12)->Complexity();

@@ -12,17 +12,17 @@ Algoat is built on a **Registry + Dispatcher** architecture that avoids virtual 
 graph TD
     UserCode["Client Code (C++ / Python)"] --> Entry["Public API (algoat::sort, algoat::search)"]
     Entry --> Dispatcher["algoat::core::Dispatcher"]
-    
+
     subgraph "Core Profiling & Heuristics"
         Dispatcher --> Traits["DataTraits analyze(span)"]
         Dispatcher --> Config["AlgoConfig (JSON overrides)"]
     end
-    
+
     subgraph "Static Polymorphism via std::variant"
         Dispatcher --> Registry["Registry&lt;SortVariant&gt;"]
         Registry --> Visit["std::visit(lambda, variant)"]
     end
-    
+
     subgraph "Algorithm Execution"
         Visit --> SortAlgos["19 Sorting Algorithms<br/>(IntroSort, TimSort, RadixSort, etc.)"]
         Visit --> SearchAlgos["Searching Algorithms<br/>(Binary, Interpolation, Linear)"]
@@ -132,8 +132,8 @@ In [`src/core/dispatcher.cpp`](src/core/dispatcher.cpp):
 1. `#include "algoat/sorting/my_new_sort.hpp"`
 2. Add factory registration inside `Dispatcher::Dispatcher`:
    ```cpp
-   sort_registry_.register_algo("mynewsort", []() -> sorting::SortVariant { 
-       return sorting::MyNewSort{}; 
+   sort_registry_.register_algo("mynewsort", []() -> sorting::SortVariant {
+       return sorting::MyNewSort{};
    });
    ```
 

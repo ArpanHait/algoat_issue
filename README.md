@@ -80,10 +80,10 @@ vcpkg install algoat
 
 int main() {
     std::vector<int> data = {42, 7, 19, 100, 3, 55, 21};
-    
+
     // Automatically selects the best sorting algorithm based on data traits
     algoat::sort(std::span{data});
-    
+
     // Automatically selects the best searching algorithm (BinarySearch for sorted data)
     auto res = algoat::search(std::span{data}, 19);
     if (res) {
@@ -127,7 +127,8 @@ For complete, runnable standalone examples and benchmark suites, see:
 
 Algoat uses a **Registry and Dispatcher** pattern. Algorithms are registered using a `std::variant` to eliminate virtual table (`vtable`) overhead. The `Dispatcher` dynamically analyzes incoming data using `DataTraits` (size, sortedness ratio, duplicates) and selects an optimal algorithm if one is not explicitly configured via `AlgoConfig`.
 
-For an in-depth guide on the internal architecture, static dispatch mechanics, domain numerics, and step-by-step instructions on how to add new algorithms, see [ARCHITECTURE.md](ARCHITECTURE.md).
+- For an in-depth guide on the internal architecture, static dispatch mechanics, and domain numerics, see [ARCHITECTURE.md](ARCHITECTURE.md).
+- For local environment setup, build and test workflows, code style guidelines, and contribution recipes, see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 

@@ -4,8 +4,9 @@
  */
 
 #include "algoat/core/config.hpp"
-#include <nlohmann/json.hpp>
+
 #include <fstream>
+#include <nlohmann/json.hpp>
 #include <stdexcept>
 
 namespace algoat::core {

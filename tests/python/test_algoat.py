@@ -56,19 +56,18 @@ def test_rational_sort():
 
 def test_numpy_specialized_sorts():
     import numpy as np
-    
+
     # Float16
     f16 = np.array([3.5, -1.2, 0.0, 100.0, -50.5], dtype=np.float16)
     res_f16 = algoat.sort(f16)
     assert np.array_equal(res_f16, np.sort(f16))
-    
+
     # Bool
     b = np.array([True, False, True, False, True], dtype=np.bool_)
     res_b = algoat.sort(b)
     assert np.array_equal(res_b, np.array([False, False, True, True, True]))
-    
+
     # Complex64
     c64 = np.array([1+2j, 0+0j, -1-1j, 2+1j], dtype=np.complex64)
     res_c64 = algoat.sort(c64)
     assert len(res_c64) == 4
-

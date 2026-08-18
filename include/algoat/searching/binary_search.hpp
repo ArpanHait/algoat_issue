@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
-#include <optional>
 #include <cstddef>
+#include <optional>
+#include <span>
+#include <string_view>
 
 namespace algoat::searching {
 
@@ -39,15 +39,16 @@ struct BinarySearch {
     /**
      * @brief Searches for target using binary search with overflow-safe midpoint calculation.
      * @tparam T Element type supporting <tt>operator==</tt> and <tt>operator<</tt>.
- *
- * @param data Sorted span of elements.
- *
- * @param target Value to locate.
+     *
+     * @param data Sorted span of elements.
+     *
+     * @param target Value to locate.
      * @return Index of a matching element if present, or @c std::nullopt.
      */
-    template<typename T>
+    template <typename T>
     std::optional<std::size_t> search(std::span<T> data, const T& target) const {
-        if (data.empty()) return std::nullopt;
+        if (data.empty())
+            return std::nullopt;
 
         std::size_t left = 0;
         std::size_t right = data.size() - 1;
@@ -59,7 +60,8 @@ struct BinarySearch {
             } else if (data[mid] < target) {
                 left = mid + 1;
             } else {
-                if (mid == 0) break;
+                if (mid == 0)
+                    break;
                 right = mid - 1;
             }
         }

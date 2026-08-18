@@ -1,15 +1,15 @@
-#include <gtest/gtest.h>
+#include "algoat/sorting/blocksort.hpp"
 #include "algoat/sorting/introsort.hpp"
 #include "algoat/sorting/timsort.hpp"
-#include "algoat/sorting/blocksort.hpp"
-#include <vector>
+
 #include <algorithm>
+#include <gtest/gtest.h>
 #include <random>
+#include <vector>
 
 using namespace algoat::sorting;
 
-template <typename Algo>
-class HybridSortTest : public ::testing::Test {
+template <typename Algo> class HybridSortTest : public ::testing::Test {
 protected:
     Algo algo;
     void verify_sort(std::vector<int>& data) {

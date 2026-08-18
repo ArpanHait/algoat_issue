@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "algoat/searching/binary_search.hpp"
+
+#include <gtest/gtest.h>
 #include <vector>
 
 using namespace algoat::searching;

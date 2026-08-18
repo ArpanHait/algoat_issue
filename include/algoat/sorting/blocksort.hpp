@@ -5,19 +5,20 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
-#include <concepts>
+#include "algoat/sorting/insertionsort.hpp"
+
 #include <algorithm>
 #include <cmath>
-#include "algoat/sorting/insertionsort.hpp"
+#include <concepts>
+#include <span>
+#include <string_view>
 
 namespace algoat::sorting {
 
 /**
  * @struct BlockSort
  * @brief Block Merge Sort utilizing  block decomposition.
- * 
+ *
  * Partitions the data into blocks of size ~sqrt(N), sorts each block
  * using @c std::sort, and merges adjacent blocks using in-place merge passes.
  *
@@ -53,16 +54,16 @@ struct BlockSort {
     /**
      * @brief Sorts the span in-place using block merge sort.
      * @tparam T Type satisfying @c std::totally_ordered.
- *
- * @param data Contiguous span of elements to sort.
+     *
+     * @param data Contiguous span of elements to sort.
      */
-    template<std::totally_ordered T>
-    void sort(std::span<T> data) const {
-        if (data.empty()) return;
-        
+    template <std::totally_ordered T> void sort(std::span<T> data) const {
+        if (data.empty())
+            return;
+
         std::size_t n = data.size();
         std::size_t block_size = static_cast<std::size_t>(std::sqrt(n));
-        
+
         // Small block size fallback to InsertionSort
         if (block_size < 16) {
             InsertionSort{}.sort(data);
@@ -81,7 +82,8 @@ struct BlockSort {
                 std::size_t mid = std::min(left + size, n);
                 std::size_t right = std::min(left + 2 * size, n);
                 if (mid < right) {
-                    std::inplace_merge(data.begin() + left, data.begin() + mid, data.begin() + right);
+                    std::inplace_merge(data.begin() + left, data.begin() + mid,
+                                       data.begin() + right);
                 }
             }
         }

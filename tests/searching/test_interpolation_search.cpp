@@ -1,7 +1,8 @@
-#include <gtest/gtest.h>
 #include "algoat/searching/interpolation_search.hpp"
-#include <vector>
+
+#include <gtest/gtest.h>
 #include <string>
+#include <vector>
 
 using namespace algoat::searching;
 

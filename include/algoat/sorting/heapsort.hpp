@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
 #include <cstddef>
+#include <span>
+#include <string_view>
 #include <utility>
 
 namespace algoat::sorting {
@@ -15,7 +15,7 @@ namespace algoat::sorting {
 /**
  * @struct HeapSort
  * @brief In-place sorting algorithm utilizing a binary max-heap.
- * 
+ *
  * Guaranteed @c O(N log N) worst-case performance with zero dynamic allocation.
  * Serves as the primary guaranteed fallback in @c algoat::core::Dispatcher and the
  * worst-case recursion safeguard in @c algoat::sorting::IntroSort.
@@ -44,13 +44,13 @@ struct HeapSort {
     /**
      * @brief Sorts the span in-place using a binary max-heap.
      * @tparam T Element type supporting <tt>operator<</tt>.
- *
- * @param data Contiguous span of elements to sort.
+     *
+     * @param data Contiguous span of elements to sort.
      */
-    template<typename T>
-    void sort(std::span<T> data) const {
+    template <typename T> void sort(std::span<T> data) const {
         const std::size_t n = data.size();
-        if (n <= 1) return;
+        if (n <= 1)
+            return;
 
         // Build max-heap (bottom-up heap construction in O(n))
         for (std::size_t i = n / 2; i > 0; --i) {
@@ -75,15 +75,14 @@ struct HeapSort {
 private:
     /**
      * @brief Sifts down the subtree rooted at index @c i to maintain max-heap property.
- *
- * @param arr Array buffer.
- *
- * @param n Current active size of the heap.
- *
- * @param i Root index of the subtree.
+     *
+     * @param arr Array buffer.
+     *
+     * @param n Current active size of the heap.
+     *
+     * @param i Root index of the subtree.
      */
-    template<typename T>
-    void heapify(T* arr, std::size_t n, std::size_t i) const {
+    template <typename T> void heapify(T* arr, std::size_t n, std::size_t i) const {
         std::size_t largest = i;
         std::size_t left = 2 * i + 1;
         std::size_t right = 2 * i + 2;

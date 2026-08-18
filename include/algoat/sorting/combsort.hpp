@@ -5,17 +5,17 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
-#include <concepts>
 #include <algorithm>
+#include <concepts>
+#include <span>
+#include <string_view>
 
 namespace algoat::sorting {
 
 /**
  * @struct CombSort
  * @brief Improvement over Bubble Sort using a geometric shrink factor of 1.3.
- * 
+ *
  * Eliminates "turtles" (small values near the end of the array) by starting with a large
  * comparison gap and shrinking by ~1.3 each pass until .
  *
@@ -51,18 +51,18 @@ struct CombSort {
     /**
      * @brief Sorts the span in-place using Comb Sort.
      * @tparam T Type satisfying @c std::totally_ordered.
- *
- * @param data Contiguous span of elements to sort.
+     *
+     * @param data Contiguous span of elements to sort.
      */
-    template<std::totally_ordered T>
-    void sort(std::span<T> data) const {
+    template <std::totally_ordered T> void sort(std::span<T> data) const {
         std::size_t gap = data.size();
         bool swapped = true;
-        
+
         while (gap > 1 || swapped) {
             gap = (gap * 10) / 13; // Shrink factor 1.3
-            if (gap < 1) gap = 1;
-            
+            if (gap < 1)
+                gap = 1;
+
             swapped = false;
             for (std::size_t i = 0; i + gap < data.size(); ++i) {
                 if (data[i + gap] < data[i]) {

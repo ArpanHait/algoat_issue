@@ -1,8 +1,8 @@
 #include <algoat/algoat.hpp>
-#include <iostream>
-#include <vector>
 #include <fstream>
+#include <iostream>
 #include <span>
+#include <vector>
 
 int main() {
     std::cout << "--- Algoat Basic Usage Example ---\n\n";
@@ -10,15 +10,17 @@ int main() {
     // 1. Without Config (Auto Dispatch)
     std::cout << "[Auto Dispatch]\n";
     std::vector<int> data = {42, 7, 19, 100, 3, 55, 21};
-    
+
     std::cout << "Original data: ";
-    for (int v : data) std::cout << v << " ";
+    for (int v : data)
+        std::cout << v << " ";
     std::cout << "\n";
 
     algoat::sort(std::span{data});
-    
+
     std::cout << "Sorted data:   ";
-    for (int v : data) std::cout << v << " ";
+    for (int v : data)
+        std::cout << v << " ";
     std::cout << "\n";
 
     int target = 19;
@@ -31,7 +33,7 @@ int main() {
 
     // 2. With Config Override
     std::cout << "\n[Config Override]\n";
-    
+
     std::ofstream config_file("example_config.json");
     config_file << R"({
         "sorting": {"prefer": "heapsort"},
@@ -43,9 +45,10 @@ int main() {
 
     std::vector<int> data2 = {9, 1, 8, 2, 7, 3, 6, 4, 5};
     algoat::sort(std::span{data2});
-    
+
     std::cout << "Sorted data (heapsort): ";
-    for (int v : data2) std::cout << v << " ";
+    for (int v : data2)
+        std::cout << v << " ";
     std::cout << "\n";
 
     int target2 = 7;

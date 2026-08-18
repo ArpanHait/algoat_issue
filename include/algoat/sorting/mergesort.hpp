@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
 #include <cstddef>
-#include <vector>
+#include <span>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 namespace algoat::sorting {
 
@@ -41,12 +41,12 @@ struct MergeSort {
     /**
      * @brief Sorts the span in-place using top-down merge sort.
      * @tparam T Element type supporting <tt>operator<=</tt> and move operations.
- *
- * @param data Span of elements to sort.
+     *
+     * @param data Span of elements to sort.
      */
-    template<typename T>
-    void sort(std::span<T> data) const {
-        if (data.size() <= 1) return;
+    template <typename T> void sort(std::span<T> data) const {
+        if (data.size() <= 1)
+            return;
         std::vector<T> buffer(data.size());
         mergesort_impl(data.data(), buffer.data(), 0, data.size() - 1);
     }
@@ -62,16 +62,16 @@ struct MergeSort {
 private:
     /**
      * @brief Recursive mergesort dividing subranges at the midpoint.
- *
- * @param arr Target array pointer.
- *
- * @param temp Auxiliary workspace buffer pointer.
- *
- * @param left Left subrange boundary.
- *
- * @param right Right subrange boundary.
+     *
+     * @param arr Target array pointer.
+     *
+     * @param temp Auxiliary workspace buffer pointer.
+     *
+     * @param left Left subrange boundary.
+     *
+     * @param right Right subrange boundary.
      */
-    template<typename T>
+    template <typename T>
     void mergesort_impl(T* arr, T* temp, std::size_t left, std::size_t right) const {
         if (left < right) {
             std::size_t mid = left + (right - left) / 2;
@@ -82,9 +82,10 @@ private:
     }
 
     /**
-     * @brief Merges two sorted contiguous subranges <tt>[left, mid]</tt> and <tt>[mid+1, right]</tt>.
+     * @brief Merges two sorted contiguous subranges <tt>[left, mid]</tt> and <tt>[mid+1,
+     * right]</tt>.
      */
-    template<typename T>
+    template <typename T>
     void merge(T* arr, T* temp, std::size_t left, std::size_t mid, std::size_t right) const {
         std::size_t i = left;
         std::size_t j = mid + 1;

@@ -1,0 +1,68 @@
+name: Auto Assign PR Author
+
+on:
+  pull_request_target:
+    types: [opened, ready_for_review, converted_to_draft, reopened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  assign-author:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign PR Author and Post Welcome Message
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            try {
+              const pr = context.payload.pull_request;
+              const author = pr.user.login;
+              const isBot = pr.user.type === 'Bot' || author.includes('[bot]');
+
+              console.log(`Processing PR #${pr.number} by ${author} (action: ${context.payload.action})`);
+
+              // 1. Assign PR author
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                assignees: [author]
+              });
+              console.log(`Successfully assigned @${author} to PR #${pr.number}`);
+
+              // 2. Post welcome comment only when PR is newly opened and author is not a bot
+              if (context.payload.action === 'opened' && !isBot) {
+                const welcomeMessage = `## 🎉 Welcome, @${author}!
+
+                Thank you for contributing to **Algoat**! 🚀 Your pull request has been automatically assigned to you.
+
+                ### 📋 Next Steps
+                - ✅ Ensure all tests pass:
+                  - C++ GoogleTest: \`ctest --preset debug\`
+                  - Python suite: \`pytest tests/python/\`
+                  - Sanitizers: \`cmake --preset asan\`
+                - ✅ Verify formatting: \`clang-format -i ...\`
+                - ✅ Include benchmark numbers if introducing or modifying algorithms
+                - ✅ Address any reviewer comments or suggestions
+
+                ### 🤝 Helpful Resources
+                - [Contributing Guidelines](CONTRIBUTING.md) — build presets, git workflows, and algorithm recipes
+                - [Code of Conduct](CODE_OF_CONDUCT.md) — community standards
+
+                We appreciate your contribution and look forward to reviewing your work! 💙`;
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: pr.number,
+                  body: welcomeMessage
+                });
+                console.log('Welcome comment created successfully');
+              }
+            } catch (error) {
+              console.error(`Error in assign-author workflow: ${error.message}`);
+              throw error;
+            }

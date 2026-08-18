@@ -1,6 +1,6 @@
 """Algoat: High-performance C++20 and Python algorithm library.
 
-Features smart dynamic fallback dispatch based on data profiles, 
+Features smart dynamic fallback dispatch based on data profiles,
 domain-specific non-comparative sorting for Float16, boolean, and complex arrays,
 and zero-copy NumPy interoperability.
 """
@@ -12,18 +12,18 @@ from typing import Union, List, Any, Optional
 
 def sort(data: Union[np.ndarray, List[Any]]) -> Union[np.ndarray, List[Any]]:
     """Sort an array or list using smart dynamic algorithm dispatch.
-    
+
     If given a NumPy ndarray, operates in-place with zero-copy C++ execution:
     - `np.float16`: Dispatches to O(N) bit-flipping counting/radix sort.
     - `np.bool_`: Dispatches to branchless O(N) counting pass and memset.
     - `np.complex64` / `np.complex128`: Dispatches to 2D Morton Z-order curve spatial radix sort.
     - Other numeric types (float32, float64, int32, int64, etc.): Dispatches to dynamic C++ Dispatcher.
-    
+
     If given a standard Python list, returns a newly allocated sorted list without mutating the original.
-    
+
     Args:
         data: A NumPy 1D array or a Python list of comparable elements.
-        
+
     Returns:
         The sorted NumPy array (in-place) or a new sorted Python list.
     """
@@ -52,4 +52,3 @@ def sort(data: Union[np.ndarray, List[Any]]) -> Union[np.ndarray, List[Any]]:
         return _algoat_impl.sort(data)
 
 __all__ = ["sort", "sort_inplace", "search", "load_global_config", "Rational"]
-

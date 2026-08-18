@@ -1,7 +1,7 @@
 /**
  * @file radixsort.hpp
  * @brief Least Significant Digit (LSD) and Most Significant Digit (MSD) Radix Sort.
- * 
+ *
  * Provides non-comparative linear-time sorting for integral types by processing
  * byte-by-byte (8-bit radix = 256 buckets). Signed integers are seamlessly supported
  * by flipping the most significant sign bit via XOR with <tt>1 << (sizeof(T)*8 - 1)</tt>.
@@ -9,20 +9,20 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
-#include <concepts>
-#include <vector>
 #include <algorithm>
-#include <type_traits>
+#include <concepts>
+#include <span>
 #include <stdexcept>
+#include <string_view>
+#include <type_traits>
+#include <vector>
 
 namespace algoat::sorting {
 
 /**
  * @struct RadixSortLSD
  * @brief Stable Least Significant Digit (LSD) Radix Sort for integers.
- * 
+ *
  * Iterates through digits from least significant byte (LSB) to most significant byte (MSB),
  * maintaining stability across <tt>sizeof(T)</tt> passes.
  *
@@ -53,16 +53,16 @@ struct RadixSortLSD {
     /**
      * @brief Sorts an integral span using LSD Radix Sort.
      * @tparam T Must satisfy <tt>std::is_integral_v<T></tt>.
- *
- * @param arr Span of integers to sort in-place.
+     *
+     * @param arr Span of integers to sort in-place.
      * @throws std::invalid_argument If @c T is non-integral.
      */
-    template<typename T>
-    void sort(std::span<T> arr) const {
+    template <typename T> void sort(std::span<T> arr) const {
         if constexpr (!std::is_integral_v<T>) {
             throw std::invalid_argument("RadixSortLSD requires an integral type");
         } else {
-            if (arr.empty()) return;
+            if (arr.empty())
+                return;
 
             using U = std::make_unsigned_t<T>;
             const int passes = sizeof(T);
@@ -110,7 +110,7 @@ struct RadixSortLSD {
 /**
  * @struct RadixSortMSD
  * @brief Recursive Most Significant Digit (MSD) Radix Sort for integers.
- * 
+ *
  * Partitions elements into 256 sub-buckets starting from MSB and recurses down to LSB.
  *
  * @par Characteristics:
@@ -140,9 +140,9 @@ struct RadixSortMSD {
     /**
      * @brief Recursive MSD radix sort worker on sub-buckets.
      */
-    template<typename T>
-    static void msd_impl(std::span<T> arr, std::span<T> buffer, int shift) {
-        if (arr.size() <= 1) return;
+    template <typename T> static void msd_impl(std::span<T> arr, std::span<T> buffer, int shift) {
+        if (arr.size() <= 1)
+            return;
 
         using U = std::make_unsigned_t<T>;
         std::size_t count[256] = {0};
@@ -164,7 +164,7 @@ struct RadixSortMSD {
 
         std::size_t offsets[256];
         std::copy(std::begin(boundaries), std::end(boundaries), std::begin(offsets));
-        
+
         for (T val : arr) {
             U u_val = static_cast<U>(val);
             if constexpr (std::is_signed_v<T>) {
@@ -180,11 +180,8 @@ struct RadixSortMSD {
             for (int i = 0; i < 256; ++i) {
                 std::size_t bin_size = count[i];
                 if (bin_size > 1) {
-                    msd_impl<T>(
-                        arr.subspan(boundaries[i], bin_size),
-                        buffer.subspan(boundaries[i], bin_size),
-                        shift - 8
-                    );
+                    msd_impl<T>(arr.subspan(boundaries[i], bin_size),
+                                buffer.subspan(boundaries[i], bin_size), shift - 8);
                 }
             }
         }
@@ -193,16 +190,16 @@ struct RadixSortMSD {
     /**
      * @brief Sorts an integral span using recursive MSD Radix Sort.
      * @tparam T Must satisfy <tt>std::is_integral_v<T></tt>.
- *
- * @param arr Span of integers to sort in-place.
+     *
+     * @param arr Span of integers to sort in-place.
      * @throws std::invalid_argument If @c T is non-integral.
      */
-    template<typename T>
-    void sort(std::span<T> arr) const {
+    template <typename T> void sort(std::span<T> arr) const {
         if constexpr (!std::is_integral_v<T>) {
             throw std::invalid_argument("RadixSortMSD requires an integral type");
         } else {
-            if (arr.size() <= 1) return;
+            if (arr.size() <= 1)
+                return;
             std::vector<T> buffer(arr.size());
             msd_impl<T>(arr, buffer, (sizeof(T) - 1) * 8);
         }

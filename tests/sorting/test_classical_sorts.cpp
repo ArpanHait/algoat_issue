@@ -1,19 +1,19 @@
-#include <gtest/gtest.h>
-#include "algoat/sorting/selectionsort.hpp"
-#include "algoat/sorting/bubblesort.hpp"
-#include "algoat/sorting/shellsort.hpp"
-#include "algoat/sorting/combsort.hpp"
-#include "algoat/sorting/gnomesort.hpp"
-#include "algoat/sorting/cyclesort.hpp"
 #include "algoat/sorting/bitonicsort.hpp"
-#include <vector>
+#include "algoat/sorting/bubblesort.hpp"
+#include "algoat/sorting/combsort.hpp"
+#include "algoat/sorting/cyclesort.hpp"
+#include "algoat/sorting/gnomesort.hpp"
+#include "algoat/sorting/selectionsort.hpp"
+#include "algoat/sorting/shellsort.hpp"
+
 #include <algorithm>
+#include <gtest/gtest.h>
 #include <random>
+#include <vector>
 
 using namespace algoat::sorting;
 
-template <typename Algo>
-class ClassicalSortTest : public ::testing::Test {
+template <typename Algo> class ClassicalSortTest : public ::testing::Test {
 protected:
     Algo algo;
     void verify_sort(std::vector<int>& data) {
@@ -24,7 +24,8 @@ protected:
     }
 };
 
-using SortAlgos = ::testing::Types<SelectionSort, BubbleSort, ShellSort, CombSort, GnomeSort, CycleSort>;
+using SortAlgos =
+    ::testing::Types<SelectionSort, BubbleSort, ShellSort, CombSort, GnomeSort, CycleSort>;
 TYPED_TEST_SUITE(ClassicalSortTest, SortAlgos);
 
 TYPED_TEST(ClassicalSortTest, RandomData) {

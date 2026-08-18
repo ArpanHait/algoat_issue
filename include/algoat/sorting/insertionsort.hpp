@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
 #include <cstddef>
+#include <span>
+#include <string_view>
 #include <utility>
 
 namespace algoat::sorting {
@@ -15,7 +15,7 @@ namespace algoat::sorting {
 /**
  * @struct InsertionSort
  * @brief Standard stable Insertion Sort implementation with move semantics.
- * 
+ *
  * Efficient for small sequences (<tt>N < 32</tt>) and nearly sorted data. Used as
  * the default base-case sort in hybrid algorithms (IntroSort, TimSort, BlockSort).
  *
@@ -43,11 +43,10 @@ struct InsertionSort {
     /**
      * @brief Sorts the given span using insertion sort.
      * @tparam T Element type supporting <tt>operator></tt> and move construction/assignment.
- *
- * @param data Span of elements to sort in-place.
+     *
+     * @param data Span of elements to sort in-place.
      */
-    template<typename T>
-    void sort(std::span<T> data) const {
+    template <typename T> void sort(std::span<T> data) const {
         const std::size_t n = data.size();
         for (std::size_t i = 1; i < n; ++i) {
             T key = std::move(data[i]);

@@ -1,0 +1,79 @@
+name: Update Changelog on Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update CHANGELOG.md
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const release = context.payload.release;
+            if (!release) {
+              console.log('No release payload detected. Skipping.');
+              return;
+            }
+
+            const tagName = release.tag_name || 'vNext';
+            const version = tagName.replace(/^v/, '');
+            const releaseBody = release.body || 'No release notes provided.';
+            const releaseDate = new Date().toISOString().split('T')[0];
+
+            console.log(`Updating CHANGELOG.md for release ${tagName} (${releaseDate})`);
+
+            const changelogPath = 'CHANGELOG.md';
+            let content = '';
+            if (fs.existsSync(changelogPath)) {
+              content = fs.readFileSync(changelogPath, 'utf8');
+            } else {
+              content = '# Changelog\n\nAll notable changes to **Algoat** will be documented in this file.\n\n---\n';
+            }
+
+            // Prevent duplicate entries
+            if (content.includes(`## [${version}]`) || content.includes(`## ${tagName}`)) {
+              console.log(`Release ${tagName} is already present in CHANGELOG.md. Skipping.`);
+              return;
+            }
+
+            const newEntry = `## [${version}] - ${releaseDate}\n\n${releaseBody}\n\n`;
+
+            // Insert after header or at top
+            let updatedContent = '';
+            const headerMatch = content.match(/^(# Changelog[\s\S]*?---\n\n)/m);
+            if (headerMatch) {
+              updatedContent = content.replace(headerMatch[1], headerMatch[1] + newEntry);
+            } else {
+              updatedContent = `# Changelog\n\n${newEntry}` + content;
+            }
+
+            fs.writeFileSync(changelogPath, updatedContent, 'utf8');
+            console.log('CHANGELOG.md successfully updated.');
+
+      - name: Commit and Push Changelog
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          if git status --porcelain | grep -q CHANGELOG.md; then
+            git add CHANGELOG.md
+            git commit -m "docs(changelog): update CHANGELOG.md for ${{ github.event.release.tag_name || 'latest release' }} [skip ci]"
+            git push origin main
+            echo "Successfully pushed updated CHANGELOG.md to main"
+          else
+            echo "No changes detected in CHANGELOG.md"
+          fi

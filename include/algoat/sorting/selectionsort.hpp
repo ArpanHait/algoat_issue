@@ -5,17 +5,17 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
-#include <concepts>
 #include <algorithm>
+#include <concepts>
+#include <span>
+#include <string_view>
 
 namespace algoat::sorting {
 
 /**
  * @struct SelectionSort
  * @brief Simple in-place comparison-based selection sort.
- * 
+ *
  * Divides the input into a sorted and unsorted region, repeatedly finding the
  * minimum element from the unsorted region and swapping it into the sorted boundary.
  *
@@ -51,11 +51,10 @@ struct SelectionSort {
     /**
      * @brief Sorts the span in-place using Selection Sort.
      * @tparam T Type satisfying @c std::totally_ordered.
- *
- * @param data Contiguous span of elements to sort.
+     *
+     * @param data Contiguous span of elements to sort.
      */
-    template<std::totally_ordered T>
-    void sort(std::span<T> data) const {
+    template <std::totally_ordered T> void sort(std::span<T> data) const {
         for (auto it = data.begin(); it != data.end(); ++it) {
             auto min_it = std::min_element(it, data.end());
             if (min_it != it) {

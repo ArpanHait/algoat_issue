@@ -1,16 +1,16 @@
 /**
  * @file config.hpp
  * @brief Configuration structures and JSON loader for runtime algorithm behavior.
- * 
+ *
  * Defines data structures controlling algorithm selection strategies, preferred
  * algorithms, fallbacks, and small-size thresholds.
  */
 
 #pragma once
 
-#include <string>
-#include <optional>
 #include <cstddef>
+#include <optional>
+#include <string>
 
 namespace algoat::core {
 
@@ -19,9 +19,12 @@ namespace algoat::core {
  * @brief Configuration options specific to sorting algorithms.
  */
 struct SortingConfig {
-    std::optional<std::string> prefer;          ///< Explicit algorithm name override (e.g., "quicksort", "timsort", or "auto").
-    std::optional<std::string> fallback;        ///< Algorithm to use if the preferred algorithm is unavailable or invalid (default: "heapsort").
-    std::optional<std::size_t> small_threshold; ///< Element count below which InsertionSort is preferred (default: 32).
+    std::optional<std::string>
+        prefer; ///< Explicit algorithm name override (e.g., "quicksort", "timsort", or "auto").
+    std::optional<std::string> fallback; ///< Algorithm to use if the preferred algorithm is
+                                         ///< unavailable or invalid (default: "heapsort").
+    std::optional<std::size_t>
+        small_threshold; ///< Element count below which InsertionSort is preferred (default: 32).
 };
 
 /**
@@ -29,8 +32,10 @@ struct SortingConfig {
  * @brief Configuration options specific to searching algorithms.
  */
 struct SearchingConfig {
-    std::optional<std::string> prefer;   ///< Explicit search algorithm override (e.g., "binarysearch", "linearsearch", or "auto").
-    std::optional<std::string> fallback; ///< Fallback algorithm if preferred is missing (default: "linearsearch").
+    std::optional<std::string> prefer; ///< Explicit search algorithm override (e.g.,
+                                       ///< "binarysearch", "linearsearch", or "auto").
+    std::optional<std::string>
+        fallback; ///< Fallback algorithm if preferred is missing (default: "linearsearch").
 };
 
 /**
@@ -44,7 +49,7 @@ struct AlgoConfig {
 
 /**
  * @brief Parses and loads an @c AlgoConfig from a JSON configuration file.
- * 
+ *
  * Supports schema:
  * ```json
  * {
@@ -59,7 +64,7 @@ struct AlgoConfig {
  *   }
  * }
  * ```
- * 
+ *
  *
  * @param filepath Path to the JSON configuration file.
  * @return @c AlgoConfig Populated configuration structure.

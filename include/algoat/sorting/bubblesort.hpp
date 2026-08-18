@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
 #include <concepts>
+#include <span>
+#include <string_view>
 #include <utility>
 
 namespace algoat::sorting {
@@ -15,7 +15,7 @@ namespace algoat::sorting {
 /**
  * @struct BubbleSort
  * @brief Simple comparison-based exchange sorting algorithm.
- * 
+ *
  * Repeatedly steps through the list, compares adjacent elements, and swaps them
  * if they are in the wrong order. Includes the @c swapped boolean flag for @c O(N)
  * early termination if the array becomes sorted before all passes finish.
@@ -52,12 +52,12 @@ struct BubbleSort {
     /**
      * @brief Sorts the span in-place using Bubble Sort.
      * @tparam T Type satisfying @c std::totally_ordered.
- *
- * @param data Contiguous span of elements to sort.
+     *
+     * @param data Contiguous span of elements to sort.
      */
-    template<std::totally_ordered T>
-    void sort(std::span<T> data) const {
-        if (data.empty()) return;
+    template <std::totally_ordered T> void sort(std::span<T> data) const {
+        if (data.empty())
+            return;
         bool swapped = true;
         for (std::size_t i = 0; i < data.size() - 1 && swapped; ++i) {
             swapped = false;

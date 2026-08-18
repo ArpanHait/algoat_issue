@@ -1,0 +1,139 @@
+name: Auto-assign issue on /attempt comment
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  assign-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const comment = context.payload.comment;
+            const issue = context.payload.issue;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const userMaxConcurrentIssueCount = 2;
+
+            // Only run on issues, not PR comments
+            if (issue.pull_request) {
+              return;
+            }
+
+            async function listIssueEvents(issueNumber) {
+              const events = [];
+              let page = 1;
+              let hasNextPage = true;
+
+              while (hasNextPage) {
+                const eventsResponse = await github.rest.issues.listEventsForTimeline({
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  per_page: 100,
+                  page
+                });
+
+                events.push(...eventsResponse.data);
+
+                hasNextPage = eventsResponse.headers.link && eventsResponse.headers.link.includes('rel="next"');
+                page++;
+              }
+
+              return events;
+            }
+
+            async function listUserOpenIssuesWithoutActivePullRequest(user) {
+              const issuesWithoutActivePullRequest = [];
+
+              const { data: userOpenIssues } = await github.rest.issues.listForRepo({
+                owner,
+                repo,
+                state: 'open',
+                assignee: user.login,
+                per_page: 100
+              });
+
+              for (const issueItem of userOpenIssues) {
+                if (issueItem.pull_request) continue;
+                const events = await listIssueEvents(issueItem.number);
+                const userPullRequestIssues = events
+                  .filter(event => event.event === 'cross-referenced')
+                  .map(event => event.source.issue)
+                  .filter(iss => iss && iss.pull_request && iss.user.login === user.login);
+
+                if (userPullRequestIssues.length === 0) {
+                  issuesWithoutActivePullRequest.push(issueItem);
+                  continue;
+                }
+
+                let hasOpenNonDraftPr = false;
+                for (const pullRequestIssue of userPullRequestIssues) {
+                  try {
+                    const { data: pullRequest } = await github.rest.pulls.get({
+                      owner,
+                      repo,
+                      pull_number: pullRequestIssue.number
+                    });
+
+                    if (!pullRequest.draft && pullRequest.state === 'open') {
+                      hasOpenNonDraftPr = true;
+                      break;
+                    }
+                  } catch (e) {
+                    console.log(`Could not fetch PR #${pullRequestIssue.number}: ${e.message}`);
+                  }
+                }
+
+                if (!hasOpenNonDraftPr) {
+                  issuesWithoutActivePullRequest.push(issueItem);
+                }
+              }
+
+              return issuesWithoutActivePullRequest;
+            }
+
+            if (comment.body.trim().startsWith('/attempt')) {
+              const assignees = issue.assignees || [];
+              if (assignees.length === 0) {
+                const userActiveIssues = await listUserOpenIssuesWithoutActivePullRequest(comment.user);
+
+                if (userActiveIssues.length < userMaxConcurrentIssueCount) {
+                  await github.rest.issues.addAssignees({
+                    owner,
+                    repo,
+                    issue_number: issue.number,
+                    assignees: [comment.user.login],
+                  });
+
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: issue.number,
+                    body: `Hello @${comment.user.login}! 👋 This issue has been successfully assigned to you. Thank you for contributing to **Algoat**! 🚀\n\n**Next Steps:**\n- Check out our [Contributing Guidelines](CONTRIBUTING.md) for build, testing, and formatting guidelines.\n- Open a draft PR early to share progress and get feedback.\n- If you need any help, feel free to ask here!`,
+                  });
+                } else {
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: issue.number,
+                    body: `Hi @${comment.user.login}! 😊 We appreciate your interest in contributing. However, you currently have ${userActiveIssues.length} active assigned issue(s), and our limit is **${userMaxConcurrentIssueCount}** concurrent issues per contributor. Please complete or link PRs for your active tasks before claiming another. Thank you for your understanding!`,
+                  });
+                }
+              } else {
+                const currentAssignee = assignees.map(a => `@${a.login}`).join(', ');
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: issue.number,
+                  body: `Hello @${comment.user.login}! 👋 Thank you for your interest in this issue. However, it's currently assigned to ${currentAssignee}. If you'd like to collaborate or take over this issue if it becomes inactive, please reach out to a maintainer.`,
+                });
+              }
+            }

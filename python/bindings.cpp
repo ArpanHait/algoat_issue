@@ -1,43 +1,44 @@
 /**
  * @file bindings.cpp
  * @brief Nanobind Python C++ extension module for Algoat.
- * 
+ *
  * Exposes C++ sorting and searching primitives to Python with zero-copy NumPy ndarray
  * buffer views, mixed-type list sorting with GIL release, and Morton Z-order curve
  * spatial sorting for complex numbers.
  */
 
-#include <nanobind/nanobind.h>
-#include <nanobind/stl/string.h>
-#include <nanobind/stl/optional.h>
-#include <nanobind/ndarray.h>
-#include <algoat/algoat.hpp>
-#include "python_wrappers.hpp"
 #include "python_types.hpp"
-#include <vector>
+#include "python_wrappers.hpp"
+
+#include <algoat/algoat.hpp>
+#include <nanobind/nanobind.h>
+#include <nanobind/ndarray.h>
+#include <nanobind/stl/optional.h>
+#include <nanobind/stl/string.h>
 #include <span>
+#include <vector>
 
 namespace nb = nanobind;
 
 /**
- * @brief Unboxes Python list elements into C++ wrappers, sorts in C++ releasing the GIL, and returns a new list.
+ * @brief Unboxes Python list elements into C++ wrappers, sorts in C++ releasing the GIL, and
+ * returns a new list.
  * @tparam Wrapper Type of wrapper struct (e.g., `PyFloatWrapper`, `PyBigIntWrapper`).
  * @param data Input Python list.
  * @return New sorted Python list.
  */
-template<typename Wrapper>
-nb::list sort_list_direct(nb::list data) {
+template <typename Wrapper> nb::list sort_list_direct(nb::list data) {
     size_t n = nb::len(data);
     std::vector<Wrapper> buf(n);
     for (size_t i = 0; i < n; ++i) {
         buf[i] = Wrapper(data[i].ptr());
     }
-    
+
     {
         nb::gil_scoped_release release;
         algoat::sort<Wrapper>(std::span<Wrapper>{buf});
     }
-    
+
     nb::list result = nb::steal<nb::list>(PyList_New(n));
     for (size_t i = 0; i < n; ++i) {
         PyObject* obj = buf[i].obj;
@@ -52,21 +53,21 @@ nb::list sort_list_direct(nb::list data) {
  * @tparam Wrapper Type of wrapper struct.
  * @param data Python list to sort in-place.
  */
-template<typename Wrapper>
-void sort_list_inplace_impl(nb::list data) {
+template <typename Wrapper> void sort_list_inplace_impl(nb::list data) {
     size_t n = nb::len(data);
-    if (n == 0) return;
-    
+    if (n == 0)
+        return;
+
     std::vector<Wrapper> buf(n);
     for (size_t i = 0; i < n; ++i) {
         buf[i] = Wrapper(data[i].ptr());
     }
-    
+
     {
         nb::gil_scoped_release release;
         algoat::sort<Wrapper>(std::span<Wrapper>{buf});
     }
-    
+
     for (size_t i = 0; i < n; ++i) {
         PyList_SET_ITEM(data.ptr(), i, buf[i].obj);
     }
@@ -115,12 +116,13 @@ bool try_sort_bool_list(nb::list data, nb::list& out_result) {
 
 /**
  * @brief Primary entry point for out-of-place Python list sorting.
- * 
+ *
  * Inspects the type of the first element to dispatch to specialized fast-path wrappers.
  */
 nb::list sort_dispatch(nb::list data) {
-    if (nb::len(data) == 0) return nb::list();
-    
+    if (nb::len(data) == 0)
+        return nb::list();
+
     nb::list bool_res;
     if (try_sort_bool_list(data, bool_res)) {
         return bool_res;
@@ -144,16 +146,21 @@ nb::list sort_dispatch(nb::list data) {
  * @brief Primary entry point for in-place Python list sorting.
  */
 void sort_inplace_dispatch(nb::list data) {
-    if (nb::len(data) == 0) return;
-    
+    if (nb::len(data) == 0)
+        return;
+
     if (PyBool_Check(data[0].ptr())) {
         size_t n = nb::len(data);
         size_t count_false = 0;
         bool all_bool = true;
         for (size_t i = 0; i < n; ++i) {
             PyObject* ptr = data[i].ptr();
-            if (!PyBool_Check(ptr)) { all_bool = false; break; }
-            if (ptr == Py_False) count_false++;
+            if (!PyBool_Check(ptr)) {
+                all_bool = false;
+                break;
+            }
+            if (ptr == Py_False)
+                count_false++;
         }
         if (all_bool) {
             for (size_t i = 0; i < count_false; ++i) {
@@ -171,7 +178,7 @@ void sort_inplace_dispatch(nb::list data) {
             return;
         }
     }
-    
+
     PyObject* first = data[0].ptr();
     if (PyFloat_Check(first)) {
         sort_list_inplace_impl<algoat::pybind::PyFloatWrapper>(data);
@@ -189,24 +196,28 @@ void sort_inplace_dispatch(nb::list data) {
 /**
  * @brief Direct typed search implementation on Python lists.
  */
-template<typename T>
+template <typename T>
 std::optional<std::size_t> search_list_direct(nb::list data, const T& target) {
     std::string algo_name = algoat::get_global_config().searching.prefer.value_or("auto");
-    
+
     if (algo_name == "auto" || algo_name == "binarysearch") {
         size_t lo = 0, hi = nb::len(data);
         while (lo < hi) {
             size_t mid = lo + (hi - lo) / 2;
             T val = nb::cast<T>(data[mid]);
-            if (val == target) return mid;
-            if (val < target) lo = mid + 1;
-            else hi = mid;
+            if (val == target)
+                return mid;
+            if (val < target)
+                lo = mid + 1;
+            else
+                hi = mid;
         }
         return std::nullopt;
     } else if (algo_name == "linearsearch") {
         size_t n = nb::len(data);
         for (size_t i = 0; i < n; ++i) {
-            if (nb::cast<T>(data[i]) == target) return i;
+            if (nb::cast<T>(data[i]) == target)
+                return i;
         }
         return std::nullopt;
     } else {
@@ -222,8 +233,9 @@ std::optional<std::size_t> search_list_direct(nb::list data, const T& target) {
  * @brief Searches for target value in Python list with dynamic type inference.
  */
 std::optional<std::size_t> search_dispatch(nb::list data, nb::object target) {
-    if (nb::len(data) == 0) return std::nullopt;
-    
+    if (nb::len(data) == 0)
+        return std::nullopt;
+
     if (PyFloat_Check(data[0].ptr()) || PyFloat_Check(target.ptr())) {
         return search_list_direct<double>(data, nb::cast<double>(target));
     } else if (PyUnicode_Check(data[0].ptr()) || PyUnicode_Check(target.ptr())) {
@@ -242,7 +254,9 @@ std::optional<std::size_t> search_dispatch(nb::list data, nb::object target) {
  */
 void sort_ndarray_float16_buffer(nb::ndarray<uint16_t, nb::ndim<1>, nb::c_contig> array) {
     if (reinterpret_cast<std::uintptr_t>(array.data()) % alignof(uint16_t) != 0) {
-        throw std::invalid_argument("Input array memory buffer is not aligned to alignof(uint16_t). Use np.require(arr, requirements=['A']) in Python.");
+        throw std::invalid_argument(
+            "Input array memory buffer is not aligned to alignof(uint16_t). Use np.require(arr, "
+            "requirements=['A']) in Python.");
     }
     algoat::numerics::sort_float16(std::span<uint16_t>(array.data(), array.size()));
 }
@@ -276,11 +290,13 @@ void sort_ndarray_uint64(nb::ndarray<uint64_t, nb::ndim<1>, nb::c_contig> array)
 NB_MODULE(_algoat_impl, m) {
     m.doc() = "Algoat C++ algorithm library bindings";
 
-    m.def("load_global_config", &algoat::load_global_config, nb::arg("filepath"), "Load algorithm configuration from a JSON file");
+    m.def("load_global_config", &algoat::load_global_config, nb::arg("filepath"),
+          "Load algorithm configuration from a JSON file");
 
     m.def("sort", &sort_dispatch, nb::arg("data"), "Sort a list of mixed types");
     m.def("sort_inplace", &sort_inplace_dispatch, nb::arg("data"), "Sort a list in-place");
-    m.def("search", &search_dispatch, nb::arg("data"), nb::arg("target"), "Search for a target in a list");
+    m.def("search", &search_dispatch, nb::arg("data"), nb::arg("target"),
+          "Search for a target in a list");
 
     m.def("sort_numpy_f16", &sort_ndarray_float16_buffer, nb::arg("array").noconvert());
     m.def("sort_numpy_bool", &sort_ndarray_bool_buffer, nb::arg("array").noconvert());
@@ -292,16 +308,19 @@ NB_MODULE(_algoat_impl, m) {
     m.def("sort_numpy", &sort_ndarray_uint64, nb::arg("array").noconvert());
 
     m.def("sort_numpy_c64", [](nb::ndarray<std::complex<float>, nb::ndim<1>, nb::c_contig> array) {
-        algoat::numerics::sort_complex_morton(std::span<std::complex<float>>(array.data(), array.size()));
+        algoat::numerics::sort_complex_morton(
+            std::span<std::complex<float>>(array.data(), array.size()));
     });
-    m.def("sort_numpy_c128", [](nb::ndarray<std::complex<double>, nb::ndim<1>, nb::c_contig> array) {
-        algoat::numerics::sort_complex_morton(std::span<std::complex<double>>(array.data(), array.size()));
-    });
+    m.def("sort_numpy_c128",
+          [](nb::ndarray<std::complex<double>, nb::ndim<1>, nb::c_contig> array) {
+              algoat::numerics::sort_complex_morton(
+                  std::span<std::complex<double>>(array.data(), array.size()));
+          });
 
     nb::class_<algoat::Rational>(m, "Rational")
         .def(nb::init<int64_t, int64_t>())
         .def_rw("num", &algoat::Rational::num)
         .def_rw("den", &algoat::Rational::den)
-        .def("__lt__", [](const algoat::Rational &a, const algoat::Rational &b) { return a < b; })
-        .def("__eq__", [](const algoat::Rational &a, const algoat::Rational &b) { return a == b; });
+        .def("__lt__", [](const algoat::Rational& a, const algoat::Rational& b) { return a < b; })
+        .def("__eq__", [](const algoat::Rational& a, const algoat::Rational& b) { return a == b; });
 }

@@ -1,0 +1,40 @@
+name: Mark and Close Stale Issues and PRs
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run at midnight UTC every day
+  workflow_dispatch:
+    inputs:
+      run_now:
+        description: 'Run the stale action now'
+        required: false
+        default: false
+        type: boolean
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  stale:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/stale@v9
+        with:
+          days-before-stale: 60
+          days-before-close: 14
+          stale-issue-label: 'stale'
+          stale-pr-label: 'stale'
+          remove-stale-when-updated: true
+          stale-issue-message: 'This issue has been automatically marked as stale because it has had no activity for 60 days. It will be closed in 14 days if no further activity occurs. Thank you for your contributions to Algoat!'
+          close-issue-message: 'This issue has been automatically closed due to inactivity. Feel free to reopen if this issue is still relevant.'
+          exempt-issue-labels: 'pinned,security,bug,enhancement,help wanted'
+          stale-pr-message: 'This pull request has been automatically marked as stale because it has had no activity for 60 days. It will be closed in 14 days if no further activity occurs. Thank you for your contributions to Algoat!'
+          close-pr-message: 'This pull request has been automatically closed due to inactivity. Feel free to reopen if you still want to contribute these changes.'
+          exempt-pr-labels: 'pinned,dependencies,work in progress'
+          exempt-all-milestones: true
+          exempt-all-assignees: false
+          operations-per-run: 100

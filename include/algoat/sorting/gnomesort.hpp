@@ -5,17 +5,17 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
-#include <concepts>
 #include <algorithm>
+#include <concepts>
+#include <span>
+#include <string_view>
 
 namespace algoat::sorting {
 
 /**
  * @struct GnomeSort
  * @brief Simple comparison sort similar to insertion sort using stepwise moves.
- * 
+ *
  * Named after the garden gnome moving flower pots. Uses a @c last variable to track
  * the furthest advanced position, avoiding redundant linear traversals after backward swaps.
  *
@@ -51,14 +51,13 @@ struct GnomeSort {
     /**
      * @brief Sorts the span in-place using Gnome Sort with position memorization.
      * @tparam T Type satisfying @c std::totally_ordered.
- *
- * @param data Contiguous span of elements to sort.
+     *
+     * @param data Contiguous span of elements to sort.
      */
-    template<std::totally_ordered T>
-    void sort(std::span<T> data) const {
+    template <std::totally_ordered T> void sort(std::span<T> data) const {
         std::size_t pos = 1;
         std::size_t last = 1;
-        
+
         while (pos < data.size()) {
             if (pos == 0 || data[pos - 1] <= data[pos]) {
                 pos = last;

@@ -1,7 +1,7 @@
-#include <iostream>
-#include <vector>
-#include <span>
 #include <algoat/core/dispatcher.hpp>
+#include <iostream>
+#include <span>
+#include <vector>
 
 int main() {
     std::vector<int> data = {5, 2, 8, 1, 9};

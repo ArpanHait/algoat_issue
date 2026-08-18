@@ -1,8 +1,9 @@
-#include <gtest/gtest.h>
 #include "algoat/core/registry.hpp"
+
+#include <algorithm>
+#include <gtest/gtest.h>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 using namespace algoat::core;
 
@@ -25,7 +26,8 @@ TEST(RegistryTest, DuplicateRegistrationThrows) {
     MockRegistry registry;
     registry.register_algo("algo1", []() { return MockAlgo{"first"}; });
 
-    EXPECT_THROW(registry.register_algo("algo1", []() { return MockAlgo{"second"}; }), std::runtime_error);
+    EXPECT_THROW(registry.register_algo("algo1", []() { return MockAlgo{"second"}; }),
+                 std::runtime_error);
 }
 
 TEST(RegistryTest, UnknownNameThrows) {
@@ -37,10 +39,10 @@ TEST(RegistryTest, ListRegistered) {
     MockRegistry registry;
     registry.register_algo("algo2", []() { return MockAlgo{"a2"}; });
     registry.register_algo("algo1", []() { return MockAlgo{"a1"}; });
-    
+
     auto registered = registry.list_registered();
     EXPECT_EQ(registered.size(), 2);
-    
+
     // std::unordered_map order is not guaranteed, so sort before checking
     std::sort(registered.begin(), registered.end());
     EXPECT_EQ(registered[0], "algo1");

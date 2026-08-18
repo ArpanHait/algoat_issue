@@ -1,8 +1,9 @@
-#include <gtest/gtest.h>
 #include "algoat/sorting/insertionsort.hpp"
-#include <vector>
+
 #include <algorithm>
+#include <gtest/gtest.h>
 #include <random>
+#include <vector>
 
 using namespace algoat::sorting;
 

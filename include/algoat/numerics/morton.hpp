@@ -1,12 +1,12 @@
 /**
  * @file morton.hpp
  * @brief 2D Morton Z-Order spatial curve sorting for complex numbers.
- * 
+ *
  * Replaces standard 1D lexicographical complex sorting with a 2D spatial Morton (Z-order)
  * curve ordering. This guarantees that numbers close to each other in the 2D complex plane
  * (real and imaginary components) remain spatially adjacent in memory, significantly
  * improving cache locality and nearest-neighbor query performance.
- * 
+ *
  *
  * @par Morton Interleaving:
  * 32-bit real (@c x) and imaginary (@c y) floating point coordinates are mapped
@@ -16,7 +16,7 @@
  * @endcode
  * - On x86-64 CPUs with BMI2 support, bit deposition uses the hardware @c _pdep_u64 instruction.
  * - On non-BMI2 architectures, an optimized 5-step bitwise dilatation (@c split_by_1) is used.
- * 
+ *
  *
  * @par Sorting Strategy:
  * - For <tt>N < 256</tt>: @c std::sort with @c MortonCompare transparent comparator.
@@ -25,14 +25,14 @@
 
 #pragma once
 
-#include <complex>
-#include <tuple>
-#include <cstdint>
-#include <bit>
-#include <cstring>
-#include <vector>
-#include <span>
 #include <algorithm>
+#include <bit>
+#include <complex>
+#include <cstdint>
+#include <cstring>
+#include <span>
+#include <tuple>
+#include <vector>
 
 #if defined(__BMI2__) || defined(__AVX2__)
 #include <immintrin.h>
@@ -42,10 +42,10 @@ namespace algoat::numerics {
 
 /**
  * @brief Interleaves two 32-bit unsigned integers into a 64-bit Morton Z-order key.
- * 
+ *
  * Places bits of @c x at even bit positions (0, 2, 4, ...) and bits of @c y at odd
  * bit positions (1, 3, 5, ...).
- * 
+ *
  *
  * @param x 32-bit unsigned integer for the X dimension (even bits).
  *
@@ -54,16 +54,15 @@ namespace algoat::numerics {
  */
 inline uint64_t morton_interleave(uint32_t x, uint32_t y) noexcept {
 #if defined(__BMI2__)
-    return _pdep_u64(x, 0x5555555555555555ULL) | 
-           _pdep_u64(y, 0xAAAAAAAAAAAAAAAAULL);
+    return _pdep_u64(x, 0x5555555555555555ULL) | _pdep_u64(y, 0xAAAAAAAAAAAAAAAAULL);
 #else
     auto split_by_1 = [](uint32_t a) -> uint64_t {
         uint64_t x = a & 0xFFFFFFFFULL;
         x = (x | (x << 16)) & 0x0000FFFF0000FFFFULL;
-        x = (x | (x << 8))  & 0x00FF00FF00FF00FFULL;
-        x = (x | (x << 4))  & 0x0F0F0F0F0F0F0F0FULL;
-        x = (x | (x << 2))  & 0x3333333333333333ULL;
-        x = (x | (x << 1))  & 0x5555555555555555ULL;
+        x = (x | (x << 8)) & 0x00FF00FF00FF00FFULL;
+        x = (x | (x << 4)) & 0x0F0F0F0F0F0F0F0FULL;
+        x = (x | (x << 2)) & 0x3333333333333333ULL;
+        x = (x | (x << 1)) & 0x5555555555555555ULL;
         return x;
     };
     return split_by_1(x) | (split_by_1(y) << 1);
@@ -72,10 +71,10 @@ inline uint64_t morton_interleave(uint32_t x, uint32_t y) noexcept {
 
 /**
  * @brief Converts a 2D float coordinate (x, y) into a 64-bit Morton Z-order key.
- * 
+ *
  * Maps IEEE-754 32-bit floats into monotonic unsigned integers via sign-bit manipulation,
  * then performs Morton interleaving.
- * 
+ *
  *
  * @param x Real (X) coordinate.
  *
@@ -101,23 +100,22 @@ struct MortonCompare {
 
     template <typename T, typename U>
     constexpr bool operator()(const std::complex<T>& a, const std::complex<U>& b) const noexcept {
-        return float_to_morton(static_cast<float>(a.real()), static_cast<float>(a.imag())) < 
+        return float_to_morton(static_cast<float>(a.real()), static_cast<float>(a.imag())) <
                float_to_morton(static_cast<float>(b.real()), static_cast<float>(b.imag()));
     }
 };
 
 /**
  * @brief Sorts a contiguous span of complex numbers along the 2D Morton Z-order curve.
- * 
+ *
  * Uses a 4-pass 16-bit Radix Sort across 64-bit keys for large arrays (<tt>N >= 256</tt>),
  * achieving <tt>O(N)</tt> time complexity and preserving 2D spatial locality.
- * 
+ *
  * @tparam T Floating-point or arithmetic component type of the complex numbers.
  *
  * @param data Contiguous span of complex numbers to sort in-place.
  */
-template <typename T>
-void sort_complex_morton(std::span<std::complex<T>> data) {
+template <typename T> void sort_complex_morton(std::span<std::complex<T>> data) {
     if (data.size() < 256) {
         std::sort(data.begin(), data.end(), MortonCompare{});
         return;
@@ -131,7 +129,8 @@ void sort_complex_morton(std::span<std::complex<T>> data) {
     std::vector<Element> src(data.size());
     for (size_t i = 0; i < data.size(); ++i) {
         src[i].val = data[i];
-        src[i].key = float_to_morton(static_cast<float>(data[i].real()), static_cast<float>(data[i].imag()));
+        src[i].key =
+            float_to_morton(static_cast<float>(data[i].real()), static_cast<float>(data[i].imag()));
     }
 
     std::vector<Element> dst(data.size());

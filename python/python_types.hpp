@@ -11,9 +11,10 @@ namespace algoat {
 /**
  * @struct Rational
  * @brief Exact fractional number representation (numerator / denominator).
- * 
+ *
  * Implements cross-multiplication comparison without floating-point rounding errors.
- * Uses 128-bit integer arithmetic (`__int128`) on supported platforms to prevent intermediate overflow.
+ * Uses 128-bit integer arithmetic (`__int128`) on supported platforms to prevent intermediate
+ * overflow.
  */
 struct Rational {
     int64_t num; ///< Numerator.

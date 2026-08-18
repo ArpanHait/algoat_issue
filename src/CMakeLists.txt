@@ -1,7 +1,7 @@
 add_library(algoat algoat.cpp core/traits.cpp core/config.cpp core/registry.cpp core/dispatcher.cpp sorting/insertionsort.cpp sorting/quicksort.cpp sorting/mergesort.cpp sorting/heapsort.cpp searching/linear_search.cpp searching/binary_search.cpp searching/interpolation_search.cpp)
 
 target_include_directories(algoat
-    PUBLIC  
+    PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}

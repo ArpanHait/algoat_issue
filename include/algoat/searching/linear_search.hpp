@@ -5,17 +5,17 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
-#include <optional>
 #include <cstddef>
+#include <optional>
+#include <span>
+#include <string_view>
 
 namespace algoat::searching {
 
 /**
  * @struct LinearSearch
  * @brief Sequential search scanning elements from left to right.
- * 
+ *
  * Works on unsorted collections and returns the first occurrence of the target element.
  *
  * @par Characteristics:
@@ -41,13 +41,13 @@ struct LinearSearch {
     /**
      * @brief Linearly searches for target in the span.
      * @tparam T Element type supporting <tt>operator==</tt>.
- *
- * @param data Span of elements to search.
- *
- * @param target Value to locate.
+     *
+     * @param data Span of elements to search.
+     *
+     * @param target Value to locate.
      * @return Index of the first matching element, or @c std::nullopt.
      */
-    template<typename T>
+    template <typename T>
     std::optional<std::size_t> search(std::span<T> data, const T& target) const {
         for (std::size_t i = 0; i < data.size(); ++i) {
             if (data[i] == target) {

@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
 #include <cstddef>
+#include <span>
+#include <string_view>
 #include <utility>
 
 namespace algoat::sorting {
@@ -40,12 +40,12 @@ struct QuickSort {
     /**
      * @brief Sorts the span in-place using quicksort.
      * @tparam T Element type supporting <tt>operator<</tt> and <tt>operator<=</tt>.
- *
- * @param data Contiguous span of elements to sort.
+     *
+     * @param data Contiguous span of elements to sort.
      */
-    template<typename T>
-    void sort(std::span<T> data) const {
-        if (data.size() <= 1) return;
+    template <typename T> void sort(std::span<T> data) const {
+        if (data.size() <= 1)
+            return;
         quicksort_impl(data.data(), 0, data.size() - 1);
     }
 
@@ -60,15 +60,14 @@ struct QuickSort {
 private:
     /**
      * @brief Recursive quicksort helper.
- *
- * @param arr Pointer to the raw buffer.
- *
- * @param low Starting index of subrange.
- *
- * @param high Ending index of subrange (inclusive).
+     *
+     * @param arr Pointer to the raw buffer.
+     *
+     * @param low Starting index of subrange.
+     *
+     * @param high Ending index of subrange (inclusive).
      */
-    template<typename T>
-    void quicksort_impl(T* arr, std::size_t low, std::size_t high) const {
+    template <typename T> void quicksort_impl(T* arr, std::size_t low, std::size_t high) const {
         if (low < high) {
             std::size_t pi = partition(arr, low, high);
             if (pi > 0) {
@@ -79,15 +78,19 @@ private:
     }
 
     /**
-     * @brief Sorts <tt>arr[low]</tt>, <tt>arr[mid]</tt>, and <tt>arr[high]</tt> to choose the median as pivot.
+     * @brief Sorts <tt>arr[low]</tt>, <tt>arr[mid]</tt>, and <tt>arr[high]</tt> to choose the
+     * median as pivot.
      * @return Index of the pivot element (placed at @c high).
      */
-    template<typename T>
+    template <typename T>
     std::size_t median_of_three(T* arr, std::size_t low, std::size_t high) const {
         std::size_t mid = low + (high - low) / 2;
-        if (arr[mid] < arr[low]) std::swap(arr[low], arr[mid]);
-        if (arr[high] < arr[low]) std::swap(arr[low], arr[high]);
-        if (arr[mid] < arr[high]) std::swap(arr[mid], arr[high]);
+        if (arr[mid] < arr[low])
+            std::swap(arr[low], arr[mid]);
+        if (arr[high] < arr[low])
+            std::swap(arr[low], arr[high]);
+        if (arr[mid] < arr[high])
+            std::swap(arr[mid], arr[high]);
         return high; // pivot is now at high
     }
 
@@ -95,8 +98,7 @@ private:
      * @brief Partitions the subrange <tt>[low, high]</tt> around the median-of-three pivot.
      * @return Final index position of the pivot.
      */
-    template<typename T>
-    std::size_t partition(T* arr, std::size_t low, std::size_t high) const {
+    template <typename T> std::size_t partition(T* arr, std::size_t low, std::size_t high) const {
         median_of_three(arr, low, high);
         const T& pivot = arr[high];
         std::size_t i = low;

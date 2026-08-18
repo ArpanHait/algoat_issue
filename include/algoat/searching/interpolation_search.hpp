@@ -5,22 +5,24 @@
 
 #pragma once
 
-#include <string_view>
-#include <span>
-#include <optional>
 #include <cstddef>
+#include <optional>
+#include <span>
+#include <string_view>
 #include <type_traits>
 
 namespace algoat::searching {
 
 /**
  * @struct InterpolationSearch
- * @brief Search algorithm estimating probe position based on key values in uniformly distributed data.
- * 
+ * @brief Search algorithm estimating probe position based on key values in uniformly distributed
+ * data.
+ *
  * Uses the linear interpolation formula for arithmetic types:
  *
  * @par Characteristics:
- * - <b>Preconditions:</b> Range must be sorted in ascending order and ideally uniformly distributed.
+ * - <b>Preconditions:</b> Range must be sorted in ascending order and ideally uniformly
+ * distributed.
  *
  * @par Time Complexity:
  * - Best Case: @c O(1)
@@ -42,15 +44,16 @@ struct InterpolationSearch {
     /**
      * @brief Searches for target using arithmetic interpolation (or binary search fallback).
      * @tparam T Element type.
- *
- * @param[in] data Sorted span of elements.
- *
- * @param[in] target Value to locate.
+     *
+     * @param[in] data Sorted span of elements.
+     *
+     * @param[in] target Value to locate.
      * @return Index of a matching element if present, or @c std::nullopt.
      */
-    template<typename T>
+    template <typename T>
     std::optional<std::size_t> search(std::span<T> data, const T& target) const {
-        if (data.empty()) return std::nullopt;
+        if (data.empty())
+            return std::nullopt;
 
         if constexpr (std::is_arithmetic_v<T>) {
             std::size_t low = 0;
@@ -58,20 +61,23 @@ struct InterpolationSearch {
 
             while (low <= high && target >= data[low] && target <= data[high]) {
                 if (low == high) {
-                    if (data[low] == target) return low;
+                    if (data[low] == target)
+                        return low;
                     return std::nullopt;
                 }
 
                 if (data[high] == data[low]) {
-                    if (data[low] == target) return low;
+                    if (data[low] == target)
+                        return low;
                     return std::nullopt;
                 }
 
-                double pos_double = static_cast<double>(low) + 
-                    ((static_cast<double>(high) - static_cast<double>(low)) / 
-                     (static_cast<double>(data[high]) - static_cast<double>(data[low]))) * 
-                    (static_cast<double>(target) - static_cast<double>(data[low]));
-                
+                double pos_double =
+                    static_cast<double>(low) +
+                    ((static_cast<double>(high) - static_cast<double>(low)) /
+                     (static_cast<double>(data[high]) - static_cast<double>(data[low]))) *
+                        (static_cast<double>(target) - static_cast<double>(data[low]));
+
                 std::size_t pos = static_cast<std::size_t>(pos_double);
 
                 if (data[pos] == target) {
@@ -81,7 +87,8 @@ struct InterpolationSearch {
                 if (data[pos] < target) {
                     low = pos + 1;
                 } else {
-                    if (pos == 0) break;
+                    if (pos == 0)
+                        break;
                     high = pos - 1;
                 }
             }
@@ -91,10 +98,13 @@ struct InterpolationSearch {
             std::size_t right = data.size() - 1;
             while (left <= right) {
                 std::size_t mid = left + (right - left) / 2;
-                if (data[mid] == target) return mid;
-                if (data[mid] < target) left = mid + 1;
+                if (data[mid] == target)
+                    return mid;
+                if (data[mid] < target)
+                    left = mid + 1;
                 else {
-                    if (mid == 0) break;
+                    if (mid == 0)
+                        break;
                     right = mid - 1;
                 }
             }

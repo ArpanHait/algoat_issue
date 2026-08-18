@@ -1,16 +1,16 @@
-#include <gtest/gtest.h>
+#include "algoat/sorting/bucketsort.hpp"
 #include "algoat/sorting/countingsort.hpp"
 #include "algoat/sorting/pigeonholesort.hpp"
 #include "algoat/sorting/radixsort.hpp"
-#include "algoat/sorting/bucketsort.hpp"
-#include <vector>
+
 #include <algorithm>
+#include <gtest/gtest.h>
 #include <random>
+#include <vector>
 
 using namespace algoat::sorting;
 
-template <typename Algo>
-class LinearSortTest : public ::testing::Test {
+template <typename Algo> class LinearSortTest : public ::testing::Test {
 protected:
     Algo algo;
     void verify_sort(std::vector<int>& data) {
@@ -21,7 +21,8 @@ protected:
     }
 };
 
-using LinearAlgos = ::testing::Types<CountingSort, PigeonholeSort, RadixSortLSD, RadixSortMSD, BucketSort>;
+using LinearAlgos =
+    ::testing::Types<CountingSort, PigeonholeSort, RadixSortLSD, RadixSortMSD, BucketSort>;
 TYPED_TEST_SUITE(LinearSortTest, LinearAlgos);
 
 TYPED_TEST(LinearSortTest, RandomData) {

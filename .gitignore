@@ -34,3 +34,7 @@ ENV/
 *.egg-info/
 dist/
 .eggs/
+
+# Agentic docs
+AGENTS.md
+docs/agents/

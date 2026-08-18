@@ -1,8 +1,9 @@
-#include <gtest/gtest.h>
 #include "algoat/sorting/mergesort.hpp"
-#include <vector>
+
 #include <algorithm>
+#include <gtest/gtest.h>
 #include <random>
+#include <vector>
 
 using namespace algoat::sorting;
 
@@ -77,12 +78,10 @@ struct StableItem {
 };
 
 TEST_F(MergeSortTest, IsStable) {
-    std::vector<StableItem> data = {
-        {3, 0}, {1, 1}, {3, 2}, {2, 3}, {1, 4}, {3, 5}
-    };
-    
+    std::vector<StableItem> data = {{3, 0}, {1, 1}, {3, 2}, {2, 3}, {1, 4}, {3, 5}};
+
     algo.sort(std::span{data});
-    
+
     // Check keys are sorted
     EXPECT_EQ(data[0].key, 1);
     EXPECT_EQ(data[1].key, 1);

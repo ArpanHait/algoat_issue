@@ -1,5 +1,6 @@
-#include <gtest/gtest.h>
 #include "algoat/core/dispatcher.hpp"
+
+#include <gtest/gtest.h>
 #include <vector>
 
 using namespace algoat::core;
@@ -44,7 +45,7 @@ TEST(DispatcherTest, SearchingConfigOverride) {
     AlgoConfig config;
     config.searching.prefer = "linearsearch";
     Dispatcher dispatcher(config);
-    std::vector<int> data = {1, 2, 5, 8}; 
+    std::vector<int> data = {1, 2, 5, 8};
     auto res = dispatcher.search(std::span{data}, 8);
     ASSERT_TRUE(res.has_value());
     EXPECT_EQ(res.value(), 3);
