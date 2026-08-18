@@ -142,6 +142,20 @@ Before submitting your PR, ensure that:
 
 ---
 
+### Issue & Pull Request Labeling
+
+Algoat uses an automated and standardized labeling taxonomy to streamline triage and reviews:
+
+- **PR Sizing (`size:*`)**: Automatically computed by CI based on net lines changed:
+  - `size: XS` (1–9 lines) | `size: S` (10–49 lines) | `size: M` (50–249 lines)
+  - `size: L` (250–499 lines) | `size: XL` (500–999 lines) | `size: XXL` (1000+ lines, split recommended)
+- **Review Effort (`review:*`)**: `review: quick`, `review: standard`, `review: deep`, `review: security-critical`.
+- **Area (`area:*`)**: Scoped to the subsystem (e.g. `area: sorting`, `area: numerics`, `area: python`, `area: core`).
+- **Issue Priority (`priority:*`)**: `priority: critical (P0)` to `priority: low (P3)`.
+- **Difficulty (`difficulty:*`)**: `difficulty: easy`, `difficulty: medium`, `difficulty: hard` for onboarding contributors.
+
+---
+
 ## Development Environment Setup
 
 ### Prerequisites

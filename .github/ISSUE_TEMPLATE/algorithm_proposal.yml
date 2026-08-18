@@ -1,0 +1,63 @@
+name: 🚀 Algorithm Proposal / Feature Request
+description: Propose a new sorting/searching algorithm, heuristic, or dynamic dispatch improvement.
+title: "feat: "
+labels: ["type: feat", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We welcome proposals for novel or high-performance algorithms in **Algoat**! Please detail the algorithmic mechanics, complexity guarantees, and target domain below.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Proposal Summary
+      description: What algorithm or capability are you proposing?
+      placeholder: E.g., Add Cache-Oblivious Funnelsort for external/large memory datasets.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Algorithm Category
+      options:
+        - Sorting: Hybrid / Comparison (e.g. IntroSort, TimSort, BlockSort)
+        - Sorting: Non-Comparative / Distribution (e.g. Radix, Counting, Bucket)
+        - Searching: Sub-linear / Interpolation / Binary probes
+        - Domain Numerics: Hardware SIMD / Bit manipulation / Z-order
+        - Dynamic Dispatch Heuristic / DataTraits profiling
+        - Python nanobind buffer protocol integration
+    validations:
+      required: true
+
+  - type: textarea
+    id: complexity
+    attributes:
+      label: Theoretical Complexity & Guarantees
+      description: Specify time and space complexity, stability, and in-place requirements.
+      value: |
+        - Time Complexity (Best / Avg / Worst):
+        - Auxiliary Space:
+        - Stability Guarantee: [Stable / Unstable]
+        - In-place: [Yes / Out-of-place]
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Motivation & Target Datasets
+      description: Under what dataset traits (size, sortedness, entropy, duplicate ratio) does this algorithm outperform existing choices?
+      placeholder: E.g., Outperforms IntroSort by ~30% when datasets contain >60% duplicate elements.
+    validations:
+      required: true
+
+  - type: textarea
+    id: references
+    attributes:
+      label: Academic Papers / Reference Implementations (if any)
+      description: Links to papers, pseudocode, or reference benchmarks.
+      placeholder: |
+        - Paper: Title / DOI link
+        - Reference: https://...

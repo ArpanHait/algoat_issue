@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: GitHub Discussions / Community Questions
+    url: https://github.com/Sambit003/algoat/discussions
+    about: Ask general questions, discuss algorithmic ideas, or brainstorm new features with the community.

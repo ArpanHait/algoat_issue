@@ -1,0 +1,39 @@
+name: ⚡ Performance Regression / Optimization
+description: Report a benchmark regression, profiling hotspot, or proposed SIMD/vectorization speedup.
+title: "perf: "
+labels: ["type: perf", "area: benchmarks", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please provide reproducible benchmark details comparing the baseline vs expected latency/throughput.
+
+  - type: textarea
+    id: overview
+    attributes:
+      label: Performance Overview
+      description: Describe the observed latency slowdown or optimization opportunity.
+      placeholder: E.g., Float16 sorting shows 25% throughput regression on GCC 13 compared to Clang 17 due to missed vectorization loop.
+    validations:
+      required: true
+
+  - type: textarea
+    id: benchmark_data
+    attributes:
+      label: Benchmark Numbers / Flamegraph
+      description: Attach numbers from `benchmarks/bench_sorting` or `benchmarks/bench_python.py`.
+      value: |
+        | Benchmark Dataset | Baseline Latency | Current / Proposed | Delta / Speedup |
+        | :--- | :--- | :--- | :--- |
+        | 1M Float16 Uniform | 2.1ms | 2.9ms | -38% regression |
+    validations:
+      required: true
+
+  - type: textarea
+    id: hardware
+    attributes:
+      label: Hardware & Compiler Details
+      description: CPU model (AVX2, AVX-512, BMI2, NEON), OS, compiler flags.
+      placeholder: E.g., AMD Ryzen 9 7950X, Ubuntu 24.04, GCC 13.2 -O3 -march=native
+    validations:
+      required: true

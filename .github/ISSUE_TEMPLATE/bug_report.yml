@@ -1,0 +1,76 @@
+name: 🐛 Bug Report
+description: Report a defect, incorrect algorithm output, runtime crash, or unexpected behavior.
+title: "fix: "
+labels: ["type: fix", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug in **Algoat**! Please fill out the sections below to help maintainers and AI agents quickly reproduce and resolve the problem.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is.
+      placeholder: E.g., algoat::sort with span<float16> yields incorrect ordering when NaNs or negative zeros are present.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal Reproducible Example
+      description: Provide a minimal C++ or Python code snippet reproducing the problem.
+      placeholder: |
+        ```cpp
+        #include <algoat/algoat.hpp>
+        #include <vector>
+
+        int main() {
+            std::vector<int> data = { ... };
+            algoat::sort(std::span{data});
+            return 0;
+        }
+        ```
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen instead?
+      placeholder: Array should be strictly weakly ordered according to std::less.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Affected Component
+      options:
+        - Sorting (include/algoat/sorting)
+        - Searching (include/algoat/searching)
+        - Numerics / Hardware Intrinsics (Float16, Morton, Boolean)
+        - Core Dispatcher & Registry
+        - Python nanobind / NumPy
+        - Build / CMake / Conan / vcpkg
+        - Documentation / Benchmarks
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment & Toolchain
+      description: Compiler version, OS, CMake version, CPU architecture.
+      value: |
+        - OS: [e.g. Ubuntu 22.04 / macOS Sonoma / Windows 11]
+        - Compiler: [e.g. GCC 13.2 / Clang 17 / MSVC 2022]
+        - CMake Version: [e.g. 3.28]
+        - CPU Architecture: [e.g. x86_64 with AVX2/BMI2, ARM64 Apple Silicon]
+        - Python / NumPy Version (if applicable): [e.g. Python 3.11, NumPy 1.26]
+    validations:
+      required: true

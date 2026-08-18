@@ -4,6 +4,7 @@ tag-template: 'v$RESOLVED_VERSION'
 categories:
   - title: '🚀 Features'
     labels:
+      - 'type: feat'
       - 'type: feature'
       - 'feature'
       - 'enhancement'
@@ -18,17 +19,20 @@ categories:
   - title: '⚡ Performance Optimizations'
     labels:
       - 'type: perf'
+      - 'type: benchmark'
       - 'perf'
       - 'performance'
       - 'benchmark'
 
-  - title: '🐛 Bug Fixes'
+  - title: '🐛 Bug Fixes & Security'
     labels:
       - 'type: fix'
+      - 'type: security'
       - 'fix'
       - 'bugfix'
       - 'bug'
       - 'hotfix'
+      - 'security'
 
   - title: '📖 Documentation'
     labels:
@@ -39,8 +43,10 @@ categories:
   - title: '🩹 Patches & Maintenance'
     labels:
       - 'type: chore'
-      - 'type: patch'
+      - 'type: refactor'
+      - 'type: test'
       - 'type: tests'
+      - 'type: patch'
       - 'chore'
       - 'refactor'
       - 'test'
@@ -62,6 +68,7 @@ version-resolver:
       - 'major'
   minor:
     labels:
+      - 'type: feat'
       - 'type: feature'
       - 'feature'
       - 'enhancement'
@@ -69,12 +76,16 @@ version-resolver:
   patch:
     labels:
       - 'type: fix'
+      - 'type: security'
       - 'type: chore'
+      - 'type: refactor'
+      - 'type: test'
       - 'type: docs'
       - 'type: bug'
       - 'type: patch'
       - 'type: tests'
       - 'type: perf'
+      - 'type: benchmark'
       - 'fix'
       - 'chore'
       - 'docs'

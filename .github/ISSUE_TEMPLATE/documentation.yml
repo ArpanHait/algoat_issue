@@ -1,0 +1,28 @@
+name: 📖 Documentation Improvement
+description: Suggest improvements, additions, or corrections to documentation or code examples.
+title: "docs: "
+labels: ["type: docs", "area: docs"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Clear, comprehensive documentation is essential for **Algoat**. Thank you for helping improve our docs!
+
+  - type: textarea
+    id: overview
+    attributes:
+      label: Documentation Topic / Area
+      description: Which page, guide, or docstring needs improvement?
+      placeholder: E.g., Add concrete benchmarks comparison to README.md; clarify DataTraits::presorted_ratio heuristics.
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Content / Changes
+      description: Describe the changes or provide proposed text/snippets.
+      placeholder: |
+        Describe the new explanation, example code snippet, or updated reference.
+    validations:
+      required: true
