@@ -9,19 +9,42 @@ import time
 import random
 import statistics
 import bisect
+import gc
 import algoat
 
 
 def bench(fn, *, warmup=3, runs=50):
-    """Run fn() `runs` times after warmup, return median time in µs."""
+    """Run fn() `runs` times after warmup with isolated GC, return median time in µs."""
     for _ in range(warmup):
         fn()
+    gc.collect()
+    gc.disable()
     times = []
     for _ in range(runs):
         t0 = time.perf_counter_ns()
         fn()
         t1 = time.perf_counter_ns()
         times.append((t1 - t0) / 1_000)  # ns → µs
+    gc.enable()
+    return statistics.median(times)
+
+
+def bench_sort(sort_fn, data, *, warmup=3, runs=50):
+    """Run sort_fn on pre-allocated copies of data with isolated GC, return median time in µs."""
+    for _ in range(warmup):
+        sort_fn(data.copy())
+
+    copies = [data.copy() for _ in range(runs)]
+
+    gc.collect()
+    gc.disable()
+    times = []
+    for copy in copies:
+        t0 = time.perf_counter_ns()
+        sort_fn(copy)
+        t1 = time.perf_counter_ns()
+        times.append((t1 - t0) / 1_000)  # ns → µs
+    gc.enable()
     return statistics.median(times)
 
 
@@ -41,10 +64,10 @@ def run_sort_benchmarks(sizes):
     for n in sizes:
         data = generate_data(n)
 
-        t_algoat = bench(lambda: algoat.sort(data))
-        t_inplace = bench(lambda: (d := data.copy(), algoat.sort_inplace(d)))
-        t_sorted = bench(lambda: sorted(data))
-        t_listsort = bench(lambda: (d := data.copy(), d.sort()))
+        t_algoat = bench_sort(algoat.sort, data)
+        t_inplace = bench_sort(algoat.sort_inplace, data)
+        t_sorted = bench_sort(sorted, data)
+        t_listsort = bench_sort(lambda d: d.sort(), data)
 
         # Compare inplace to list.sort()
         ratio = t_inplace / t_listsort if t_listsort > 0 else float('inf')
