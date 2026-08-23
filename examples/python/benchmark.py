@@ -1,50 +1,44 @@
-#!/usr/bin/env python3
-"""Algoat vs Python Native — Performance Benchmark
-
-Compares algoat's C++ backed sort/search against Python builtins
-across varying dataset sizes.
-"""
-
-import time
+import bisect
+from contextlib import contextmanager
+import gc
+import operator
 import random
 import statistics
-import bisect
-import gc
+import time
+from typing import Any, Callable, Iterable
+
 import algoat
 
 
-def bench(fn, *, warmup=3, runs=50):
-    """Run fn() `runs` times after warmup with isolated GC, return median time in µs."""
-    for _ in range(warmup):
-        fn()
+@contextmanager
+def disabled_gc():
+    """Context manager to collect and disable GC during benchmark measurements."""
     gc.collect()
     gc.disable()
-    times = []
-    for _ in range(runs):
-        t0 = time.perf_counter_ns()
-        fn()
-        t1 = time.perf_counter_ns()
-        times.append((t1 - t0) / 1_000)  # ns → µs
-    gc.enable()
-    return statistics.median(times)
+    try:
+        yield
+    finally:
+        gc.enable()
 
 
-def bench_sort(sort_fn, data, *, warmup=3, runs=50):
-    """Run sort_fn on pre-allocated copies of data with isolated GC, return median time in µs."""
-    for _ in range(warmup):
-        sort_fn(data.copy())
+def bench(action_fn: Callable[[Any], Any], items: Iterable[Any], *, warmup: int = 3) -> float:
+    """Run action_fn on items after warmup with isolated GC, returning median latency in µs."""
+    items_list = list(items)
+    if not items_list:
+        return 0.0
 
-    copies = [data.copy() for _ in range(runs)]
+    # Warmup phase
+    for i in range(min(warmup, len(items_list))):
+        action_fn(items_list[i])
 
-    gc.collect()
-    gc.disable()
-    times = []
-    for copy in copies:
-        t0 = time.perf_counter_ns()
-        sort_fn(copy)
-        t1 = time.perf_counter_ns()
-        times.append((t1 - t0) / 1_000)  # ns → µs
-    gc.enable()
+    times: list[float] = []
+    with disabled_gc():
+        for item in items_list:
+            t0 = time.perf_counter_ns()
+            action_fn(item)
+            t1 = time.perf_counter_ns()
+            times.append((t1 - t0) / 1_000)  # ns → µs
+
     return statistics.median(times)
 
 
@@ -64,10 +58,10 @@ def run_sort_benchmarks(sizes):
     for n in sizes:
         data = generate_data(n)
 
-        t_algoat = bench_sort(algoat.sort, data)
-        t_inplace = bench_sort(algoat.sort_inplace, data)
-        t_sorted = bench_sort(sorted, data)
-        t_listsort = bench_sort(lambda d: d.sort(), data)
+        t_algoat = bench(algoat.sort, (data.copy() for _ in range(50)))
+        t_inplace = bench(algoat.sort_inplace, (data.copy() for _ in range(50)))
+        t_sorted = bench(sorted, (data.copy() for _ in range(50)))
+        t_listsort = bench(operator.methodcaller("sort"), (data.copy() for _ in range(50)))
 
         # Compare inplace to list.sort()
         ratio = t_inplace / t_listsort if t_listsort > 0 else float('inf')
