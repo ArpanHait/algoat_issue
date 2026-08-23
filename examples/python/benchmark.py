@@ -1,3 +1,10 @@
+#!/usr/bin/env python3
+"""Algoat vs Python Native — Performance Benchmark
+
+Compares algoat's C++ backed sort/search against Python builtins
+across varying dataset sizes.
+"""
+
 import bisect
 from contextlib import contextmanager
 import gc
