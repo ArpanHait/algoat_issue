@@ -11,8 +11,12 @@ import gc
 import operator
 import random
 import statistics
+import sys
 import time
-from typing import Any, Callable, Iterable
+from typing import Any, Callable, List
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 import algoat
 
@@ -28,25 +32,53 @@ def disabled_gc():
         gc.enable()
 
 
-def bench(action_fn: Callable[[Any], Any], items: Iterable[Any], *, warmup: int = 3) -> float:
-    """Run action_fn on items after warmup with isolated GC, returning median latency in µs."""
-    items_list = list(items)
-    if not items_list:
-        return 0.0
-
-    # Warmup phase
-    for i in range(min(warmup, len(items_list))):
-        action_fn(items_list[i])
-
+def bench(fn: Callable[[], Any], *, warmup: int = 3, runs: int = 50) -> dict[str, float]:
+    """Run zero-argument fn() `runs` times after warmup with isolated GC, returning min/median/MAD latencies in µs."""
+    for _ in range(warmup):
+        fn()
     times: list[float] = []
     with disabled_gc():
-        for item in items_list:
+        for _ in range(runs):
             t0 = time.perf_counter_ns()
-            action_fn(item)
+            fn()
             t1 = time.perf_counter_ns()
             times.append((t1 - t0) / 1_000)  # ns → µs
 
-    return statistics.median(times)
+    min_val = min(times)
+    median_val = statistics.median(times)
+    mad_val = statistics.median([abs(x - median_val) for x in times])
+
+    return {"min": min_val, "median": median_val, "mad": mad_val}
+
+
+def bench_sort(
+    sort_fn: Callable[[List[Any]], Any],
+    data: List[Any],
+    *,
+    warmup: int = 3,
+    runs: int = 50,
+) -> dict[str, float]:
+    """Run sort_fn on pre-allocated copies of data with isolated GC, returning min/median/MAD latencies in µs."""
+    if data:
+        for _ in range(warmup):
+            sample = data.copy()
+            sort_fn(sample)
+
+    copies = [data.copy() for _ in range(runs)]
+
+    times: list[float] = []
+    with disabled_gc():
+        for copy in copies:
+            t0 = time.perf_counter_ns()
+            sort_fn(copy)
+            t1 = time.perf_counter_ns()
+            times.append((t1 - t0) / 1_000)  # ns → µs
+
+    min_val = min(times)
+    median_val = statistics.median(times)
+    mad_val = statistics.median([abs(x - median_val) for x in times])
+
+    return {"min": min_val, "median": median_val, "mad": mad_val}
 
 
 def generate_data(n, seed=42):
@@ -65,10 +97,15 @@ def run_sort_benchmarks(sizes):
     for n in sizes:
         data = generate_data(n)
 
-        t_algoat = bench(algoat.sort, (data.copy() for _ in range(50)))
-        t_inplace = bench(algoat.sort_inplace, (data.copy() for _ in range(50)))
-        t_sorted = bench(sorted, (data.copy() for _ in range(50)))
-        t_listsort = bench(operator.methodcaller("sort"), (data.copy() for _ in range(50)))
+        s_algoat = bench_sort(algoat.sort, data)
+        s_inplace = bench_sort(algoat.sort_inplace, data)
+        s_sorted = bench_sort(sorted, data)
+        s_listsort = bench_sort(operator.methodcaller("sort"), data)
+
+        t_algoat = s_algoat["median"]
+        t_inplace = s_inplace["median"]
+        t_sorted = s_sorted["median"]
+        t_listsort = s_listsort["median"]
 
         # Compare inplace to list.sort()
         ratio = t_inplace / t_listsort if t_listsort > 0 else float('inf')
@@ -95,17 +132,21 @@ def run_search_benchmarks(sizes):
         target = sorted_data[n // 3]
 
         # algoat.search on sorted data
-        t_algoat = bench(lambda: algoat.search(sorted_data, target))
+        s_algoat = bench(lambda: algoat.search(sorted_data, target))
 
         # bisect (binary search) on sorted data
         def bisect_search():
             idx = bisect.bisect_left(sorted_data, target)
             return idx if idx < len(sorted_data) and sorted_data[idx] == target else None
 
-        t_bisect = bench(bisect_search)
+        s_bisect = bench(bisect_search)
 
         # list.index (linear scan)
-        t_index = bench(lambda: sorted_data.index(target))
+        s_index = bench(lambda: sorted_data.index(target))
+
+        t_algoat = s_algoat["median"]
+        t_bisect = s_bisect["median"]
+        t_index = s_index["median"]
 
         ratio = t_algoat / t_bisect if t_bisect > 0 else float('inf')
         results.append((n, t_algoat, t_bisect, t_index, ratio))
@@ -117,8 +158,8 @@ def run_search_benchmarks(sizes):
 
 def main():
     print("╔══════════════════════════════════════════════════════════════════════╗")
-    print("║         Algoat vs Python Native — Performance Benchmark            ║")
-    print("║         Median of 50 runs per size (3 warmup iterations)           ║")
+    print("║         Algoat vs Python Native — Performance Benchmark              ║")
+    print("║         Median of 50 runs per size (3 warmup iterations)             ║")
     print("╚══════════════════════════════════════════════════════════════════════╝")
     print()
 

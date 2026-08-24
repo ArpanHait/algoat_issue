@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import gc
 import statistics
 import time
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 import algoat
 import numpy as np
@@ -24,7 +24,7 @@ def bench_sort(
     data: np.ndarray,
     number: int = 10,
     warmup: int = 3,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Run sort_fn on pre-allocated copies of data with isolated GC."""
     # Warmup phase
     for _ in range(warmup):
@@ -109,5 +109,3 @@ def benchmark_sorting():
 
 if __name__ == '__main__':
     benchmark_sorting()
-
-
