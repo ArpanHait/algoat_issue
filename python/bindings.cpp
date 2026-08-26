@@ -199,30 +199,33 @@ void sort_inplace_dispatch(nb::list data) {
 template <typename T>
 std::optional<std::size_t> search_list_direct(nb::list data, const T& target) {
     std::string algo_name = algoat::get_global_config().searching.prefer.value_or("auto");
+    size_t n = nb::len(data);
+    if (n == 0)
+        return std::nullopt;
 
     if (algo_name == "auto" || algo_name == "binarysearch") {
-        size_t lo = 0, hi = nb::len(data);
-        while (lo < hi) {
-            size_t mid = lo + (hi - lo) / 2;
-            T val = nb::cast<T>(data[mid]);
-            if (val == target)
-                return mid;
-            if (val < target)
-                lo = mid + 1;
-            else
-                hi = mid;
+        size_t base = 0;
+        size_t len = n;
+        while (len > 1) {
+            size_t half = len / 2;
+            T val = nb::cast<T>(data[base + half]);
+            base = (val < target) ? (base + half) : base;
+            len -= half;
         }
+        if (nb::cast<T>(data[base]) == target)
+            return base;
+        if (base + 1 < n && nb::cast<T>(data[base + 1]) == target)
+            return base + 1;
         return std::nullopt;
     } else if (algo_name == "linearsearch") {
-        size_t n = nb::len(data);
         for (size_t i = 0; i < n; ++i) {
             if (nb::cast<T>(data[i]) == target)
                 return i;
         }
         return std::nullopt;
     } else {
-        std::vector<T> vec(nb::len(data));
-        for (size_t i = 0; i < nb::len(data); ++i) {
+        std::vector<T> vec(n);
+        for (size_t i = 0; i < n; ++i) {
             vec[i] = nb::cast<T>(data[i]);
         }
         return algoat::search<T>(std::span<T>{vec}, target);
@@ -243,6 +246,28 @@ std::optional<std::size_t> search_dispatch(nb::list data, nb::object target) {
     } else {
         return search_list_direct<int64_t>(data, nb::cast<int64_t>(target));
     }
+}
+
+/**
+ * @brief Searches multiple targets across a Python list with amortized FFI calls.
+ */
+nb::list search_many_dispatch(nb::list data, nb::list targets) {
+    nb::list results;
+    size_t num_targets = nb::len(targets);
+    for (size_t i = 0; i < num_targets; ++i) {
+        auto res = search_dispatch(data, targets[i]);
+        if (res) {
+            results.append(nb::cast(*res));
+        } else {
+            results.append(nb::none());
+        }
+    }
+    return results;
+}
+
+template <typename T>
+std::optional<std::size_t> search_ndarray_typed(nb::ndarray<T, nb::ndim<1>, nb::c_contig> array, T target) {
+    return algoat::search<T>(std::span<T>(array.data(), array.size()), target);
 }
 
 #include <algoat/numerics/float16_sort.hpp>
@@ -297,6 +322,8 @@ NB_MODULE(_algoat_impl, m) {
     m.def("sort_inplace", &sort_inplace_dispatch, nb::arg("data"), "Sort a list in-place");
     m.def("search", &search_dispatch, nb::arg("data"), nb::arg("target"),
           "Search for a target in a list");
+    m.def("search_many", &search_many_dispatch, nb::arg("data"), nb::arg("targets"),
+          "Search for multiple targets in a list");
 
     m.def("sort_numpy_f16", &sort_ndarray_float16_buffer, nb::arg("array").noconvert());
     m.def("sort_numpy_bool", &sort_ndarray_bool_buffer, nb::arg("array").noconvert());
@@ -306,6 +333,13 @@ NB_MODULE(_algoat_impl, m) {
     m.def("sort_numpy", &sort_ndarray_int64, nb::arg("array").noconvert());
     m.def("sort_numpy", &sort_ndarray_uint32, nb::arg("array").noconvert());
     m.def("sort_numpy", &sort_ndarray_uint64, nb::arg("array").noconvert());
+
+    m.def("search_numpy", &search_ndarray_typed<float>, nb::arg("array").noconvert(), nb::arg("target"));
+    m.def("search_numpy", &search_ndarray_typed<double>, nb::arg("array").noconvert(), nb::arg("target"));
+    m.def("search_numpy", &search_ndarray_typed<int32_t>, nb::arg("array").noconvert(), nb::arg("target"));
+    m.def("search_numpy", &search_ndarray_typed<int64_t>, nb::arg("array").noconvert(), nb::arg("target"));
+    m.def("search_numpy", &search_ndarray_typed<uint32_t>, nb::arg("array").noconvert(), nb::arg("target"));
+    m.def("search_numpy", &search_ndarray_typed<uint64_t>, nb::arg("array").noconvert(), nb::arg("target"));
 
     m.def("sort_numpy_c64", [](nb::ndarray<std::complex<float>, nb::ndim<1>, nb::c_contig> array) {
         algoat::numerics::sort_complex_morton(

@@ -32,7 +32,7 @@ struct BinarySearch {
      * @brief Returns the unique identifier for this algorithm.
      * @return "binarysearch"
      */
-    [[nodiscard]] constexpr std::string_view name() const noexcept {
+    [[nodiscard]] static constexpr std::string_view name() noexcept {
         return "binarysearch";
     }
 
@@ -47,24 +47,32 @@ struct BinarySearch {
      */
     template <typename T>
     std::optional<std::size_t> search(std::span<T> data, const T& target) const {
-        if (data.empty())
+        return search(std::span<const T>{data.data(), data.size()}, target);
+    }
+
+    template <typename T>
+    std::optional<std::size_t> search(std::span<const T> data, const T& target) const {
+        if (data.empty()) {
             return std::nullopt;
-
-        std::size_t left = 0;
-        std::size_t right = data.size() - 1;
-
-        while (left <= right) {
-            std::size_t mid = left + (right - left) / 2;
-            if (data[mid] == target) {
-                return mid;
-            } else if (data[mid] < target) {
-                left = mid + 1;
-            } else {
-                if (mid == 0)
-                    break;
-                right = mid - 1;
-            }
         }
+
+        const T* base = data.data();
+        std::size_t range_length = data.size();
+
+        while (range_length > 1) {
+            std::size_t half = range_length / 2;
+            base = (base[half] < target) ? (base + half) : base;
+            range_length -= half;
+        }
+
+        std::size_t index = static_cast<std::size_t>(base - data.data());
+        if (*base == target) {
+            return index;
+        }
+        if (index + 1 < data.size() && *(base + 1) == target) {
+            return index + 1;
+        }
+
         return std::nullopt;
     }
 
@@ -72,7 +80,7 @@ struct BinarySearch {
      * @brief Indicates whether this search algorithm requires sorted input.
      * @return @c true
      */
-    [[nodiscard]] constexpr bool requires_sorted() const noexcept {
+    [[nodiscard]] static constexpr bool requires_sorted() noexcept {
         return true;
     }
 };
