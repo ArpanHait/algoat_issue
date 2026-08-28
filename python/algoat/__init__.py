@@ -52,6 +52,12 @@ def sort(data: Union[np.ndarray, List[Any]]) -> Union[np.ndarray, List[Any]]:
         return _algoat_impl.sort(data)
 
 
+_search_impl = _algoat_impl.search
+_search_numpy_impl = _algoat_impl.search_numpy
+_search_many_impl = _algoat_impl.search_many
+_search_many_numpy_impl = _algoat_impl.search_many_numpy
+
+
 def search(data: Union[np.ndarray, List[Any]], target: Any) -> Optional[int]:
     """Search for a target value within a sorted array or list using branchless bisection.
 
@@ -65,13 +71,16 @@ def search(data: Union[np.ndarray, List[Any]], target: Any) -> Optional[int]:
     Returns:
         Index of the matching element if found, or None.
     """
-    if isinstance(data, np.ndarray):
-        return _algoat_impl.search_numpy(data, target)
-    else:
-        return _algoat_impl.search(data, target)
+    if type(data) is list:
+        return _search_impl(data, target)
+    elif isinstance(data, np.ndarray):
+        return _search_numpy_impl(data, target)
+    return _search_impl(data, target)
 
 
-def search_many(data: Union[np.ndarray, List[Any]], targets: Union[np.ndarray, List[Any]]) -> List[Optional[int]]:
+def search_many(
+    data: Union[np.ndarray, List[Any]], targets: Union[np.ndarray, List[Any]]
+) -> List[Optional[int]]:
     """Batch search for multiple target values with amortized FFI overhead.
 
     Args:
@@ -81,9 +90,15 @@ def search_many(data: Union[np.ndarray, List[Any]], targets: Union[np.ndarray, L
     Returns:
         A list of matching indices (or None for targets not found).
     """
-    list_data = data if isinstance(data, list) else list(data)
-    list_targets = targets if isinstance(targets, list) else list(targets)
-    return _algoat_impl.search_many(list_data, list_targets)
+    if type(data) is list and type(targets) is list:
+        return _search_many_impl(data, targets)
+    elif isinstance(data, np.ndarray) and isinstance(targets, np.ndarray):
+        return _search_many_numpy_impl(data, targets)
+    else:
+        list_data = data if isinstance(data, list) else list(data)
+        list_targets = targets if isinstance(targets, list) else list(targets)
+        return _search_many_impl(list_data, list_targets)
+
 
 
 __all__ = ["sort", "sort_inplace", "search", "search_many", "load_global_config", "Rational"]

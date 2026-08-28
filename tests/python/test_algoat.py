@@ -71,3 +71,39 @@ def test_numpy_specialized_sorts():
     c64 = np.array([1+2j, 0+0j, -1-1j, 2+1j], dtype=np.complex64)
     res_c64 = algoat.sort(c64)
     assert len(res_c64) == 4
+
+
+def test_search_many_list():
+    data = [10, 20, 30, 40, 50]
+    targets = [20, 5, 50, 35, 10]
+    results = algoat.search_many(data, targets)
+    assert results == [1, None, 4, None, 0]
+
+    # Empty targets
+    assert algoat.search_many(data, []) == []
+
+    # Empty data
+    assert algoat.search_many([], [10, 20]) == [None, None]
+
+
+def test_search_many_numpy():
+    import numpy as np
+
+    # Int64
+    arr_i64 = np.array([10, 20, 30, 40, 50], dtype=np.int64)
+    targets_i64 = np.array([20, 5, 50, 35, 10], dtype=np.int64)
+    res_i64 = algoat.search_many(arr_i64, targets_i64)
+    assert res_i64 == [1, None, 4, None, 0]
+
+    # Int32
+    arr_i32 = np.array([1, 3, 5, 7, 9], dtype=np.int32)
+    targets_i32 = np.array([1, 7, 10], dtype=np.int32)
+    res_i32 = algoat.search_many(arr_i32, targets_i32)
+    assert res_i32 == [0, 3, None]
+
+    # Float64
+    arr_f64 = np.array([1.1, 2.2, 3.3, 4.4], dtype=np.float64)
+    targets_f64 = np.array([3.3, 0.0, 4.4], dtype=np.float64)
+    res_f64 = algoat.search_many(arr_f64, targets_f64)
+    assert res_f64 == [2, None, 3]
+

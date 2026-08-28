@@ -32,7 +32,7 @@ struct BinarySearch {
      * @brief Returns the unique identifier for this algorithm.
      * @return "binarysearch"
      */
-    [[nodiscard]] static constexpr std::string_view name() noexcept {
+    [[nodiscard]] constexpr std::string_view name() const noexcept {
         return "binarysearch";
     }
 
@@ -77,10 +77,45 @@ struct BinarySearch {
     }
 
     /**
+     * @brief Searches for target across arbitrary random-access indexed sequences branchlessly.
+     * @tparam RandomAccessSeq Random access sequence supporting operator[](std::size_t).
+     * @tparam T Value type comparable with sequence elements.
+     * @param seq The sequence to search.
+     * @param size Number of elements in seq.
+     * @param target Target value.
+     * @return Index of matching element if present, or std::nullopt.
+     */
+    template <typename RandomAccessSeq, typename T>
+    std::optional<std::size_t> search_indexed(const RandomAccessSeq& seq, std::size_t size,
+                                              const T& target) const {
+        if (size == 0) {
+            return std::nullopt;
+        }
+
+        std::size_t base = 0;
+        std::size_t range_length = size;
+
+        while (range_length > 1) {
+            std::size_t half = range_length / 2;
+            base = (seq[base + half] < target) ? (base + half) : base;
+            range_length -= half;
+        }
+
+        if (seq[base] == target) {
+            return base;
+        }
+        if (base + 1 < size && seq[base + 1] == target) {
+            return base + 1;
+        }
+
+        return std::nullopt;
+    }
+
+    /**
      * @brief Indicates whether this search algorithm requires sorted input.
      * @return @c true
      */
-    [[nodiscard]] static constexpr bool requires_sorted() noexcept {
+    [[nodiscard]] constexpr bool requires_sorted() const noexcept {
         return true;
     }
 };
