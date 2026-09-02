@@ -12,6 +12,20 @@ using namespace algoat::sorting;
 static_assert(SortAlgorithm<QuickSort, int>);
 static_assert(SortAlgorithm<QuickSort, double>);
 
+namespace {
+struct MoveOnlyInt {
+    int value;
+
+    explicit MoveOnlyInt(int v) : value(v) {}
+    MoveOnlyInt(const MoveOnlyInt&) = delete;
+    MoveOnlyInt& operator=(const MoveOnlyInt&) = delete;
+    MoveOnlyInt(MoveOnlyInt&&) noexcept = default;
+    MoveOnlyInt& operator=(MoveOnlyInt&&) noexcept = default;
+
+    auto operator<=>(const MoveOnlyInt& other) const = default;
+};
+} // namespace
+
 class QuickSortTest : public ::testing::Test {
 protected:
     QuickSort algo;
@@ -97,6 +111,28 @@ TEST_F(QuickSortTest, NegativeAndFloatingTypes) {
 
     std::vector<double> float_data = {3.14, -2.71, 0.0, 1.414, -0.577, 3.14, -100.25};
     verify_sort(float_data);
+}
+
+TEST_F(QuickSortTest, MoveOnlyTypes) {
+    std::vector<MoveOnlyInt> data;
+    data.emplace_back(50);
+    data.emplace_back(10);
+    data.emplace_back(30);
+    data.emplace_back(20);
+    data.emplace_back(40);
+    data.emplace_back(10);
+    data.emplace_back(30);
+
+    algo.sort(std::span{data});
+
+    EXPECT_TRUE(std::is_sorted(data.begin(), data.end()));
+    EXPECT_EQ(data[0].value, 10);
+    EXPECT_EQ(data[1].value, 10);
+    EXPECT_EQ(data[2].value, 20);
+    EXPECT_EQ(data[3].value, 30);
+    EXPECT_EQ(data[4].value, 30);
+    EXPECT_EQ(data[5].value, 40);
+    EXPECT_EQ(data[6].value, 50);
 }
 
 TEST_F(QuickSortTest, LargeRandom) {
