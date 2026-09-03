@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.1.1] - 2026-09-03
+
+### 🚀 Features
+
+- feat(searching): implement sub-linear simd profiler and adaptive binary search @Sambit003 (#43)
+
+### ⚡ Performance Optimizations
+
+- perf(searching): implement branchless binary search and numpy zero-copy search overloads @ArpanHait (#40)
+
+### 🐛 Bug Fixes & Security
+
+- fix(sorting): resolve sort_boolean silent corruption with branchless Lomuto partition @Sambit003 (#47)
+- fix(sorting): rectify TimSort natural runs and merge invariants @Sambit003 (#46)
+- fix(sorting): implement 3-way fat partitioning to eliminate duplicate key quadratic degradation (#16) @ArpanHait (#42)
+- fix(sorting): harden numeric bounds and memory safety in core algorithms @Sambit003 (#36)
+- fix(python): isolate GC and list cloning in Python benchmark harness @ArpanHait (#37)
+- Fix macOS wheel link failure by removing private CPython bigint APIs @[copilot-swe-agent[bot]](https://github.com/apps/copilot-swe-agent) (#1)
+- Fix ubuntu wheel build failure by using a newer manylinux image for cibuildwheel @[copilot-swe-agent[bot]](https://github.com/apps/copilot-swe-agent) (#2)
+
+### 📖 Documentation
+
+- docs: add comprehensive Doxygen documentation, IDE tooltip optimization, and ARCHITECTURE.md @Sambit003 (#3)
+
+### 🩹 Patches & Maintenance
+
+- refactor(sorting): consolidate comparative sorting test harness via TYPED_TEST_SUITE @Sambit003 (#41)
+- refactor(build): prune empty translation units from algoat target @Ritesh-Gupta-op (#9)
+
+---
+
 ## [0.1.0] - 2026-08-16
 
 ### 🚀 Highlights
