@@ -58,7 +58,7 @@ sudo cmake --install build
 
 **Conan 2.x:**
 ```bash
-conan install --requires algoat/0.1.0
+conan install --requires algoat/0.1.1
 ```
 
 **vcpkg:**

@@ -1,6 +1,6 @@
 {
   "name": "algoat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A high-performance algorithmic dispatch library for sorting and searching",
   "homepage": "https://github.com/user/algoat",
   "license": "LGPL-3.0-only",
