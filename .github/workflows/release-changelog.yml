@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update-changelog:
@@ -65,15 +66,15 @@ jobs:
             fs.writeFileSync(changelogPath, updatedContent, 'utf8');
             console.log('CHANGELOG.md successfully updated.');
 
-      - name: Commit and Push Changelog
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          if git status --porcelain | grep -q CHANGELOG.md; then
-            git add CHANGELOG.md
-            git commit -m "docs(changelog): update CHANGELOG.md for ${{ github.event.release.tag_name || 'latest release' }} [skip ci]"
-            git push origin main
-            echo "Successfully pushed updated CHANGELOG.md to main"
-          else
-            echo "No changes detected in CHANGELOG.md"
-          fi
+      - name: Create Pull Request for Changelog
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "docs(changelog): update CHANGELOG.md for ${{ github.event.release.tag_name || 'latest release' }}"
+          title: "docs(changelog): update CHANGELOG.md for ${{ github.event.release.tag_name || 'latest release' }}"
+          branch: "changelog-${{ github.event.release.tag_name || 'update' }}"
+          body: |
+            Automated changelog update for the latest release.
+
+            This PR was generated automatically by the `release-changelog` workflow to comply with branch protection rules.
+          base: main
+          labels: "type: docs"
