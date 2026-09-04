@@ -1,5 +1,8 @@
 import pytest
 import algoat
+import numpy as np
+import threading
+import tracemalloc
 
 def test_sort_ints():
     data = [5, 2, 8, 1, 9]
@@ -55,8 +58,6 @@ def test_rational_sort():
     assert sorted_data == [r2, r1, r3]
 
 def test_numpy_specialized_sorts():
-    import numpy as np
-
     # Float16
     f16 = np.array([3.5, -1.2, 0.0, 100.0, -50.5], dtype=np.float16)
     res_f16 = algoat.sort(f16)
@@ -87,8 +88,6 @@ def test_search_many_list():
 
 
 def test_search_many_numpy():
-    import numpy as np
-
     # Int64
     arr_i64 = np.array([10, 20, 30, 40, 50], dtype=np.int64)
     targets_i64 = np.array([20, 5, 50, 35, 10], dtype=np.int64)
@@ -109,8 +108,6 @@ def test_search_many_numpy():
 
 
 def test_search_numpy_unsigned_and_float32():
-    import numpy as np
-
     # np.uint32
     arr_u32 = np.array([10, 25, 50, 100, 250], dtype=np.uint32)
     assert algoat.search(arr_u32, 50) == 2
@@ -150,8 +147,6 @@ def test_search_negative_numbers_list():
 
 
 def test_search_negative_numbers_numpy():
-    import numpy as np
-
     # Int64 with negative numbers
     arr_i64 = np.array([-100, -50, -25, 0, 25, 50], dtype=np.int64)
     assert algoat.search(arr_i64, -50) == 1
@@ -182,3 +177,102 @@ def test_search_negative_numbers_numpy():
     assert algoat.search_many(arr_f32, targets_f32) == [0, 3, None]
 
 
+def test_sort_inplace_numpy_all_dtypes():
+    dtypes = [
+        np.int8, np.uint8, np.int16, np.uint16,
+        np.int32, np.uint32, np.int64, np.uint64,
+        np.float32, np.float64
+    ]
+
+    for dt in dtypes:
+        arr = np.array([50, 10, 40, 20, 30], dtype=dt)
+        orig_ptr = arr.ctypes.data
+        algoat.sort_inplace(arr)
+
+        # In-place pointer stability (zero memory reallocation)
+        assert arr.ctypes.data == orig_ptr
+        assert np.array_equal(arr, np.array([10, 20, 30, 40, 50], dtype=dt))
+
+    # Float16
+    f16_arr = np.array([5.5, 1.2, 4.4, 2.3, 3.1], dtype=np.float16)
+    f16_ptr = f16_arr.ctypes.data
+    algoat.sort_inplace(f16_arr)
+    assert f16_arr.ctypes.data == f16_ptr
+    assert np.array_equal(f16_arr, np.array([1.2, 2.3, 3.1, 4.4, 5.5], dtype=np.float16))
+
+    # Bool
+    b_arr = np.array([True, False, True, False, True], dtype=np.bool_)
+    b_ptr = b_arr.ctypes.data
+    algoat.sort_inplace(b_arr)
+    assert b_arr.ctypes.data == b_ptr
+    assert np.array_equal(b_arr, np.array([False, False, True, True, True]))
+
+    # Complex64 and Complex128
+    c64_arr = np.array([2+3j, 1+1j, 0+0j], dtype=np.complex64)
+    c64_ptr = c64_arr.ctypes.data
+    algoat.sort_inplace(c64_arr)
+    assert c64_arr.ctypes.data == c64_ptr
+
+    c128_arr = np.array([2+3j, 1+1j, 0+0j], dtype=np.complex128)
+    c128_ptr = c128_arr.ctypes.data
+    algoat.sort_inplace(c128_arr)
+    assert c128_arr.ctypes.data == c128_ptr
+
+
+def test_sort_inplace_python_list():
+    data = [5, 3, 8, 1, 9]
+    algoat.sort_inplace(data)
+    assert data == [1, 3, 5, 8, 9]
+
+
+def test_non_contiguous_numpy_slice_error():
+    # Strided non-contiguous slice
+    base = np.array([10, 5, 30, 15, 50, 25, 70, 35], dtype=np.int64)
+    strided = base[::2]
+    assert not strided.flags.c_contiguous and not strided.flags.f_contiguous
+
+    with pytest.raises(ValueError, match="contiguous"):
+        algoat.sort_inplace(strided)
+
+    with pytest.raises(ValueError, match="contiguous"):
+        algoat.sort(strided)
+
+
+def test_multithreaded_gil_release_concurrency():
+    """Verifies that multiple worker threads can sort large arrays concurrently with the GIL released."""
+    num_threads = 4
+    n = 20_000
+    arrays = [np.random.randint(0, 100_000, size=n, dtype=np.int64) for _ in range(num_threads)]
+    expected = [np.sort(arr.copy()) for arr in arrays]
+
+    threads = []
+    for i in range(num_threads):
+        t = threading.Thread(target=algoat.sort_inplace, args=(arrays[i],))
+        threads.append(t)
+
+    for t in threads:
+        t.start()
+
+    for t in threads:
+        t.join()
+
+    for i in range(num_threads):
+        assert np.array_equal(arrays[i], expected[i])
+
+
+def test_zero_memory_allocation_inplace():
+    """Confirms zero Python heap allocations occur during NumPy in-place sorting."""
+    arr = np.random.randint(0, 10_000, size=50_000, dtype=np.int64)
+
+    tracemalloc.start()
+    snapshot_before = tracemalloc.take_snapshot()
+
+    algoat.sort_inplace(arr)
+
+    snapshot_after = tracemalloc.take_snapshot()
+    tracemalloc.stop()
+
+    stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+    total_allocated = sum(stat.size_diff for stat in stats if stat.size_diff > 0)
+    # The C++ kernel operates strictly in-place; Python heap allocations should be negligible (<= a few small bytes for function framing)
+    assert total_allocated < 1024

@@ -11,12 +11,15 @@
 #include "python_wrappers.hpp"
 
 #include <algoat/algoat.hpp>
+#include <algoat/numerics/float16_sort.hpp>
+#include <algoat/sorting/boolean_sort.hpp>
 #include <nanobind/nanobind.h>
 #include <nanobind/ndarray.h>
 #include <nanobind/stl/optional.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 #include <span>
+#include <stdexcept>
 #include <vector>
 
 namespace nb = nanobind;
@@ -319,10 +322,6 @@ search_many_ndarray_typed(nb::ndarray<T, nb::ndim<1>, nb::c_contig> array,
     return results;
 }
 
-#include <algoat/numerics/float16_sort.hpp>
-#include <algoat/sorting/boolean_sort.hpp>
-#include <stdexcept>
-
 /**
  * @brief Zero-copy sorting wrapper for NumPy Float16 arrays viewed as uint16.
  */
@@ -342,11 +341,17 @@ void sort_ndarray_bool_buffer(nb::ndarray<uint8_t, nb::ndim<1>, nb::c_contig> ar
     algoat::sorting::sort_boolean(std::span<uint8_t>(array.data(), array.size()));
 }
 
-void sort_ndarray_float32(nb::ndarray<float, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<float>(array.data(), array.size()));
+void sort_ndarray_int8(nb::ndarray<int8_t, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<int8_t>(array.data(), array.size()));
 }
-void sort_ndarray_float64(nb::ndarray<double, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<double>(array.data(), array.size()));
+void sort_ndarray_uint8(nb::ndarray<uint8_t, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<uint8_t>(array.data(), array.size()));
+}
+void sort_ndarray_int16(nb::ndarray<int16_t, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<int16_t>(array.data(), array.size()));
+}
+void sort_ndarray_uint16(nb::ndarray<uint16_t, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<uint16_t>(array.data(), array.size()));
 }
 void sort_ndarray_int32(nb::ndarray<int32_t, nb::ndim<1>, nb::c_contig> array) {
     algoat::sort(std::span<int32_t>(array.data(), array.size()));
@@ -359,6 +364,12 @@ void sort_ndarray_uint32(nb::ndarray<uint32_t, nb::ndim<1>, nb::c_contig> array)
 }
 void sort_ndarray_uint64(nb::ndarray<uint64_t, nb::ndim<1>, nb::c_contig> array) {
     algoat::sort(std::span<uint64_t>(array.data(), array.size()));
+}
+void sort_ndarray_float32(nb::ndarray<float, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<float>(array.data(), array.size()));
+}
+void sort_ndarray_float64(nb::ndarray<double, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<double>(array.data(), array.size()));
 }
 
 NB_MODULE(_algoat_impl, m) {
@@ -374,18 +385,55 @@ NB_MODULE(_algoat_impl, m) {
     m.def("search_many", &search_many_dispatch, nb::arg("data"), nb::arg("targets"),
           "Search for multiple targets in a list");
 
-    m.def("sort_numpy_f16", &sort_ndarray_float16_buffer, nb::arg("array").noconvert());
-    m.def("sort_numpy_bool", &sort_ndarray_bool_buffer, nb::arg("array").noconvert());
-    m.def("sort_numpy", &sort_ndarray_float32, nb::arg("array").noconvert());
-    m.def("sort_numpy", &sort_ndarray_float64, nb::arg("array").noconvert());
-    m.def("sort_numpy", &sort_ndarray_int32, nb::arg("array").noconvert());
-    m.def("sort_numpy", &sort_ndarray_int64, nb::arg("array").noconvert());
-    m.def("sort_numpy", &sort_ndarray_uint32, nb::arg("array").noconvert());
-    m.def("sort_numpy", &sort_ndarray_uint64, nb::arg("array").noconvert());
+    // Zero-copy array sorting bindings with fine-grained GIL release
+    m.def("sort_numpy_f16", &sort_ndarray_float16_buffer, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy_bool", &sort_ndarray_bool_buffer, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_int8, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_uint8, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_int16, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_uint16, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_int32, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_int64, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_uint32, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_uint64, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_float32, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
+    m.def("sort_numpy", &sort_ndarray_float64, nb::arg("array").noconvert(),
+          nb::call_guard<nb::gil_scoped_release>());
 
-    m.def("search_numpy", &search_ndarray_typed<float>, nb::arg("array").noconvert(),
+    m.def(
+        "sort_numpy_c64",
+        [](nb::ndarray<std::complex<float>, nb::ndim<1>, nb::c_contig> array) {
+            algoat::numerics::sort_complex_morton(
+                std::span<std::complex<float>>(array.data(), array.size()));
+        },
+        nb::arg("array").noconvert(), nb::call_guard<nb::gil_scoped_release>());
+    m.def(
+        "sort_numpy_c128",
+        [](nb::ndarray<std::complex<double>, nb::ndim<1>, nb::c_contig> array) {
+            algoat::numerics::sort_complex_morton(
+                std::span<std::complex<double>>(array.data(), array.size()));
+        },
+        nb::arg("array").noconvert(), nb::call_guard<nb::gil_scoped_release>());
+
+    // Zero-copy array search bindings with fine-grained GIL release
+    m.def("search_numpy", &search_ndarray_typed<int8_t>, nb::arg("array").noconvert(),
           nb::arg("target"), nb::call_guard<nb::gil_scoped_release>());
-    m.def("search_numpy", &search_ndarray_typed<double>, nb::arg("array").noconvert(),
+    m.def("search_numpy", &search_ndarray_typed<uint8_t>, nb::arg("array").noconvert(),
+          nb::arg("target"), nb::call_guard<nb::gil_scoped_release>());
+    m.def("search_numpy", &search_ndarray_typed<int16_t>, nb::arg("array").noconvert(),
+          nb::arg("target"), nb::call_guard<nb::gil_scoped_release>());
+    m.def("search_numpy", &search_ndarray_typed<uint16_t>, nb::arg("array").noconvert(),
           nb::arg("target"), nb::call_guard<nb::gil_scoped_release>());
     m.def("search_numpy", &search_ndarray_typed<int32_t>, nb::arg("array").noconvert(),
           nb::arg("target"), nb::call_guard<nb::gil_scoped_release>());
@@ -395,10 +443,18 @@ NB_MODULE(_algoat_impl, m) {
           nb::arg("target"), nb::call_guard<nb::gil_scoped_release>());
     m.def("search_numpy", &search_ndarray_typed<uint64_t>, nb::arg("array").noconvert(),
           nb::arg("target"), nb::call_guard<nb::gil_scoped_release>());
+    m.def("search_numpy", &search_ndarray_typed<float>, nb::arg("array").noconvert(),
+          nb::arg("target"), nb::call_guard<nb::gil_scoped_release>());
+    m.def("search_numpy", &search_ndarray_typed<double>, nb::arg("array").noconvert(),
+          nb::arg("target"), nb::call_guard<nb::gil_scoped_release>());
 
-    m.def("search_many_numpy", &search_many_ndarray_typed<float>, nb::arg("array").noconvert(),
+    m.def("search_many_numpy", &search_many_ndarray_typed<int8_t>, nb::arg("array").noconvert(),
           nb::arg("targets").noconvert(), nb::call_guard<nb::gil_scoped_release>());
-    m.def("search_many_numpy", &search_many_ndarray_typed<double>, nb::arg("array").noconvert(),
+    m.def("search_many_numpy", &search_many_ndarray_typed<uint8_t>, nb::arg("array").noconvert(),
+          nb::arg("targets").noconvert(), nb::call_guard<nb::gil_scoped_release>());
+    m.def("search_many_numpy", &search_many_ndarray_typed<int16_t>, nb::arg("array").noconvert(),
+          nb::arg("targets").noconvert(), nb::call_guard<nb::gil_scoped_release>());
+    m.def("search_many_numpy", &search_many_ndarray_typed<uint16_t>, nb::arg("array").noconvert(),
           nb::arg("targets").noconvert(), nb::call_guard<nb::gil_scoped_release>());
     m.def("search_many_numpy", &search_many_ndarray_typed<int32_t>, nb::arg("array").noconvert(),
           nb::arg("targets").noconvert(), nb::call_guard<nb::gil_scoped_release>());
@@ -408,16 +464,10 @@ NB_MODULE(_algoat_impl, m) {
           nb::arg("targets").noconvert(), nb::call_guard<nb::gil_scoped_release>());
     m.def("search_many_numpy", &search_many_ndarray_typed<uint64_t>, nb::arg("array").noconvert(),
           nb::arg("targets").noconvert(), nb::call_guard<nb::gil_scoped_release>());
-
-    m.def("sort_numpy_c64", [](nb::ndarray<std::complex<float>, nb::ndim<1>, nb::c_contig> array) {
-        algoat::numerics::sort_complex_morton(
-            std::span<std::complex<float>>(array.data(), array.size()));
-    });
-    m.def("sort_numpy_c128",
-          [](nb::ndarray<std::complex<double>, nb::ndim<1>, nb::c_contig> array) {
-              algoat::numerics::sort_complex_morton(
-                  std::span<std::complex<double>>(array.data(), array.size()));
-          });
+    m.def("search_many_numpy", &search_many_ndarray_typed<float>, nb::arg("array").noconvert(),
+          nb::arg("targets").noconvert(), nb::call_guard<nb::gil_scoped_release>());
+    m.def("search_many_numpy", &search_many_ndarray_typed<double>, nb::arg("array").noconvert(),
+          nb::arg("targets").noconvert(), nb::call_guard<nb::gil_scoped_release>());
 
     nb::class_<algoat::Rational>(m, "Rational")
         .def(nb::init<int64_t, int64_t>())
