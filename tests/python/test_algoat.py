@@ -1,3 +1,5 @@
+import array
+import concurrent.futures
 import pytest
 import algoat
 import numpy as np
@@ -245,16 +247,8 @@ def test_multithreaded_gil_release_concurrency():
     arrays = [np.random.randint(0, 100_000, size=n, dtype=np.int64) for _ in range(num_threads)]
     expected = [np.sort(arr.copy()) for arr in arrays]
 
-    threads = []
-    for i in range(num_threads):
-        t = threading.Thread(target=algoat.sort_inplace, args=(arrays[i],))
-        threads.append(t)
-
-    for t in threads:
-        t.start()
-
-    for t in threads:
-        t.join()
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        list(executor.map(algoat.sort_inplace, arrays))
 
     for i in range(num_threads):
         assert np.array_equal(arrays[i], expected[i])
@@ -276,3 +270,69 @@ def test_zero_memory_allocation_inplace():
     total_allocated = sum(stat.size_diff for stat in stats if stat.size_diff > 0)
     # The C++ kernel operates strictly in-place; Python heap allocations should be negligible (<= a few small bytes for function framing)
     assert total_allocated < 1024
+
+
+def test_sort_bytearray():
+    """Tests zero-copy sorting on mutable Python bytearray."""
+    b = bytearray(b"zyxwvba")
+    algoat.sort_inplace(b)
+    assert b == bytearray(b"abvwxyz")
+
+    b2 = bytearray([50, 10, 40, 20, 30])
+    res = algoat.sort(b2)
+    assert res == bytearray([10, 20, 30, 40, 50])
+    assert b2 == bytearray([10, 20, 30, 40, 50])
+
+
+def test_sort_array_module():
+    """Tests zero-copy sorting on Python array.array types."""
+    # Signed int
+    arr_i = array.array('i', [5, 2, 9, 1, 3])
+    algoat.sort_inplace(arr_i)
+    assert arr_i == array.array('i', [1, 2, 3, 5, 9])
+
+    # Float (float32)
+    arr_f = array.array('f', [5.5, 2.2, 8.8, 1.1])
+    res_f = algoat.sort(arr_f)
+    assert res_f == array.array('f', [1.1, 2.2, 5.5, 8.8])
+
+    # Double (float64)
+    arr_d = array.array('d', [9.9, 1.1, 4.4, 2.2])
+    algoat.sort_inplace(arr_d)
+    assert arr_d == array.array('d', [1.1, 2.2, 4.4, 9.9])
+
+    # Unsigned char (uint8)
+    arr_b = array.array('B', [200, 50, 100, 10])
+    algoat.sort_inplace(arr_b)
+    assert arr_b == array.array('B', [10, 50, 100, 200])
+
+
+def test_sort_memoryview():
+    """Tests sorting on writable memoryview."""
+    buf = bytearray(b"dcba")
+    mv = memoryview(buf)
+    algoat.sort_inplace(mv)
+    assert buf == bytearray(b"abcd")
+
+
+def test_readonly_buffer_rejection():
+    """Confirms read-only buffer types raise TypeError when sorted in-place."""
+    imm = b"unmodifiable"
+    with pytest.raises(TypeError, match="read-only"):
+        algoat.sort_inplace(imm)
+
+
+def test_list_subclass_support():
+    """Verifies that list subclasses are supported per PEP 8 isinstance checks."""
+    class CustomList(list):
+        pass
+
+    cl = CustomList([5, 1, 4, 2])
+    sorted_res = algoat.sort(cl)
+    assert sorted_res == [1, 2, 4, 5]
+
+    algoat.sort_inplace(cl)
+    assert cl == [1, 2, 4, 5]
+
+    idx = algoat.search(cl, 4)
+    assert idx == 2

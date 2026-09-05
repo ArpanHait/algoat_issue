@@ -341,35 +341,9 @@ void sort_ndarray_bool_buffer(nb::ndarray<uint8_t, nb::ndim<1>, nb::c_contig> ar
     algoat::sorting::sort_boolean(std::span<uint8_t>(array.data(), array.size()));
 }
 
-void sort_ndarray_int8(nb::ndarray<int8_t, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<int8_t>(array.data(), array.size()));
-}
-void sort_ndarray_uint8(nb::ndarray<uint8_t, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<uint8_t>(array.data(), array.size()));
-}
-void sort_ndarray_int16(nb::ndarray<int16_t, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<int16_t>(array.data(), array.size()));
-}
-void sort_ndarray_uint16(nb::ndarray<uint16_t, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<uint16_t>(array.data(), array.size()));
-}
-void sort_ndarray_int32(nb::ndarray<int32_t, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<int32_t>(array.data(), array.size()));
-}
-void sort_ndarray_int64(nb::ndarray<int64_t, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<int64_t>(array.data(), array.size()));
-}
-void sort_ndarray_uint32(nb::ndarray<uint32_t, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<uint32_t>(array.data(), array.size()));
-}
-void sort_ndarray_uint64(nb::ndarray<uint64_t, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<uint64_t>(array.data(), array.size()));
-}
-void sort_ndarray_float32(nb::ndarray<float, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<float>(array.data(), array.size()));
-}
-void sort_ndarray_float64(nb::ndarray<double, nb::ndim<1>, nb::c_contig> array) {
-    algoat::sort(std::span<double>(array.data(), array.size()));
+template <typename T>
+void sort_ndarray(nb::ndarray<T, nb::ndim<1>, nb::c_contig> array) {
+    algoat::sort(std::span<T>(array.data(), array.size()));
 }
 
 NB_MODULE(_algoat_impl, m) {
@@ -390,25 +364,25 @@ NB_MODULE(_algoat_impl, m) {
           nb::call_guard<nb::gil_scoped_release>());
     m.def("sort_numpy_bool", &sort_ndarray_bool_buffer, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_int8, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<int8_t>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_uint8, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<uint8_t>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_int16, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<int16_t>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_uint16, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<uint16_t>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_int32, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<int32_t>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_int64, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<int64_t>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_uint32, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<uint32_t>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_uint64, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<uint64_t>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_float32, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<float>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
-    m.def("sort_numpy", &sort_ndarray_float64, nb::arg("array").noconvert(),
+    m.def("sort_numpy", &sort_ndarray<double>, nb::arg("array").noconvert(),
           nb::call_guard<nb::gil_scoped_release>());
 
     m.def(
